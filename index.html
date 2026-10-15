@@ -1,0 +1,923 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
+<title>Matrix Machine Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a friendly slide deck — one idea per slide, a big playful instrument beside a short plain-English column. Each talk has its own color (violet, lemon, mint); a palette picker swaps the whole set. */
+:root{
+  --bg:#FBF8F1; --paper:#FFFFFF; --grid:#EEE9DD; --ink:#26213A; --muted:#6B6582; --line:#DDD6C6;
+  --p1:#5B4BDB; --p2:#D99A00; --p3:#0E9B78; --pop:#E5533D; --p1-soft:#ECE9FF; --p2-soft:#FFF3D1; --p3-soft:#DDF5EC; --pop-soft:#FDE4DE;
+  --good:#15925E; --bad:#D23F3F;
+  --accent:var(--p1); --accent-soft:var(--p1-soft);
+  --display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Nunito Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#17142A; --paper:#211D38; --grid:#2A2545; --ink:#F1EEFF; --muted:#ADA6CC; --line:#3B3560;
+  --p1:#9D92FF; --p2:#FFC94A; --p3:#45D6AE; --pop:#FF7A62; --p1-soft:#2E2858; --p2-soft:#3E3320; --p3-soft:#173F35; --pop-soft:#46241F;
+  --good:#5BD69A; --bad:#FF7A7A; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#17142A; --paper:#211D38; --grid:#2A2545; --ink:#F1EEFF; --muted:#ADA6CC; --line:#3B3560;
+  --p1:#9D92FF; --p2:#FFC94A; --p3:#45D6AE; --pop:#FF7A62; --p1-soft:#2E2858; --p2-soft:#3E3320; --p3-soft:#173F35; --pop-soft:#46241F;
+  --good:#5BD69A; --bad:#FF7A7A; color-scheme:dark }
+/* palettes: swap the three talk colors + pop color (work on both light and dark grounds) */
+:root[data-palette="ocean"]{ --p1:#2563C9; --p2:#0B8FA3; --p3:#2E9E5B; --pop:#E0663A; --p1-soft:#E0EAFB; --p2-soft:#D9F2F5; --p3-soft:#DDF3E5; }
+:root[data-palette="berry"]{ --p1:#B0307A; --p2:#E2702B; --p3:#7A45C9; --pop:#D6336C; --p1-soft:#FBE3F0; --p2-soft:#FDE9DA; --p3-soft:#EEE5FB; }
+:root[data-palette="retro"]{ --p1:#C2412D; --p2:#2F7D8C; --p3:#C48A12; --pop:#3B5BA9; --p1-soft:#F8E1DC; --p2-soft:#DCEEF1; --p3-soft:#F7ECD3; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"])[data-palette="ocean"]{ --p1:#76A7FF; --p2:#4FD3E6; --p3:#6FDB98; --pop:#FF9566; --p1-soft:#1F2D52; --p2-soft:#143C42; --p3-soft:#18402A; }
+  :root:not([data-theme="light"])[data-palette="berry"]{ --p1:#FF7DC0; --p2:#FFAA6B; --p3:#B795FF; --pop:#FF6F9C; --p1-soft:#4A1E36; --p2-soft:#4A2E1C; --p3-soft:#33264F; }
+  :root:not([data-theme="light"])[data-palette="retro"]{ --p1:#FF8A73; --p2:#6CC9DB; --p3:#F2C25A; --pop:#8FA9FF; --p1-soft:#4A2620; --p2-soft:#1B3E45; --p3-soft:#43361A; } }
+:root[data-theme="dark"][data-palette="ocean"]{ --p1:#76A7FF; --p2:#4FD3E6; --p3:#6FDB98; --pop:#FF9566; --p1-soft:#1F2D52; --p2-soft:#143C42; --p3-soft:#18402A; }
+:root[data-theme="dark"][data-palette="berry"]{ --p1:#FF7DC0; --p2:#FFAA6B; --p3:#B795FF; --pop:#FF6F9C; --p1-soft:#4A1E36; --p2-soft:#4A2E1C; --p3-soft:#33264F; }
+:root[data-theme="dark"][data-palette="retro"]{ --p1:#FF8A73; --p2:#6CC9DB; --p3:#F2C25A; --pop:#8FA9FF; --p1-soft:#4A2620; --p2-soft:#1B3E45; --p3-soft:#43361A; }
+
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16.5px;line-height:1.55;display:flex;flex-direction:column;
+  background-image:radial-gradient(var(--grid) 1.2px,transparent 1.3px);background-size:22px 22px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+*{box-sizing:border-box}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.slide[data-c="p1"]{--accent:var(--p1);--accent-soft:var(--p1-soft)}
+.slide[data-c="p2"]{--accent:var(--p2);--accent-soft:var(--p2-soft)}
+.slide[data-c="p3"]{--accent:var(--p3);--accent-soft:var(--p3-soft)}
+.slide[data-c="pop"]{--accent:var(--pop);--accent-soft:var(--pop-soft)}
+
+/* top bar */
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding-block:10px;border-bottom:2px solid var(--line)}
+.brand{font-family:var(--display);font-weight:800;font-size:1.45rem;line-height:1;letter-spacing:.01em}
+.brand span{color:var(--p1)}.brand span+span{color:var(--p2)}.brand span+span+span{color:var(--p3)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{border:2px solid var(--line);background:var(--paper);border-radius:999px;padding:2px 12px;cursor:pointer;font-weight:700;font-size:.88rem}
+.tab[data-c="p1"][aria-current="true"]{background:var(--p1);border-color:var(--p1);color:var(--paper)}
+.tab[data-c="p2"][aria-current="true"]{background:var(--p2);border-color:var(--p2);color:var(--paper)}
+.tab[data-c="p3"][aria-current="true"]{background:var(--p3);border-color:var(--p3);color:var(--paper)}
+.tab[data-c="pop"][aria-current="true"]{background:var(--pop);border-color:var(--pop);color:var(--paper)}
+.spacer{flex:1}
+.tool{border:2px solid var(--line);background:var(--paper);border-radius:10px;padding:3px 10px;cursor:pointer;font-weight:600;font-size:.88rem}
+.tool[aria-pressed="true"]{border-color:var(--p1);background:var(--p1-soft)}
+.swatches{display:flex;gap:6px;align-items:center}
+.sw{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0;display:grid;grid-template-columns:1fr 1fr;overflow:hidden}
+.sw[aria-pressed="true"]{border-color:var(--ink);transform:scale(1.08)}
+.sw i{display:block}
+
+/* stage */
+main{flex:1;min-height:0;overflow:auto;padding-block:16px 8px}
+.slide{max-width:1180px;margin:0 auto}
+.slide:not(.on){display:none}
+.eyebrow{display:inline-block;font-weight:800;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:2px 10px;border-radius:999px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(1.7rem,3.6vw,2.6rem);line-height:1.1;margin:.25em 0 .45em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+h2{font-family:var(--display);font-weight:700;font-size:1.3rem;margin:.1em 0 .3em;line-height:1.2}
+.cols{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:22px;align-items:start}
+@media (max-width:880px){.cols{grid-template-columns:minmax(0,1fr)}}
+.read{min-width:0;max-width:60ch}
+.read p{margin:.35em 0 .75em}
+.panel{background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:14px;min-width:0}
+.panel h3{margin:0 0 8px;font-family:var(--display);font-size:1.05rem;color:var(--accent)}
+canvas{display:block;width:100%;aspect-ratio:1/1;max-width:100%;border-radius:10px;background:var(--paper);touch-action:none}
+.plain{background:var(--accent-soft);border-radius:12px;padding:10px 14px;margin:.6em 0;border:2px dashed var(--accent)}
+.plain b:first-child{display:block;font-family:var(--display);color:var(--accent);font-size:.95rem}
+.m{font-family:Georgia,"Times New Roman",serif;font-style:italic}
+.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.92em}
+.eq{font-size:1.1rem;margin:.45em 0;overflow-x:auto;padding:2px 0}
+.big{font-size:1.35rem}
+.hl{color:var(--accent);font-weight:800}
+.pop{color:var(--pop);font-weight:800}
+.box{display:inline-block;border:2px solid var(--accent);border-radius:8px;padding:0 6px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{border:2px solid var(--accent);background:transparent;color:var(--accent);border-radius:10px;padding:4px 12px;cursor:pointer;font-weight:700;font-size:.9rem}
+.btn:hover{background:var(--accent-soft)}
+.btn.solid{background:var(--accent);color:var(--paper)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 12px;font-size:.88rem;font-weight:800}
+.chip.good{background:var(--p3-soft);color:var(--good)}
+.chip.warn{background:var(--p2-soft);color:var(--p2)}
+.chip.bad{background:var(--pop-soft);color:var(--bad)}
+.check{color:var(--good);font-weight:800}
+.small{font-size:.9rem;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.85rem;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:16px;height:4px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.steps{display:flex;flex-direction:column;gap:6px;margin:.4em 0}
+.step{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px;align-items:baseline}
+.step b.n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--paper);font-size:.8rem}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:12px}
+@media (max-width:880px){.cards{grid-template-columns:minmax(0,1fr)}}
+.card{border-radius:18px;padding:18px;cursor:pointer;text-align:left;border:0;color:var(--paper);display:flex;flex-direction:column;gap:4px}
+.card.c1{background:var(--p1)}.card.c2{background:var(--p2)}.card.c3{background:var(--p3)}
+.card .who{font-weight:800;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+.card h2{color:inherit;margin:0}
+.card:hover{transform:translateY(-2px)}
+@media (prefers-reduced-motion: reduce){.card:hover{transform:none}}
+table.t{border-collapse:collapse;width:100%;font-size:.95rem}
+table.t th,table.t td{text-align:left;padding:7px 8px;border-bottom:2px solid var(--line);vertical-align:middle}
+table.t th{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tablewrap{overflow-x:auto}
+
+/* flip cards */
+.flips{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-top:10px}
+.flip{perspective:800px;border:0;background:none;padding:0;cursor:pointer;height:118px;text-align:left}
+.flip .in{display:block;position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
+.flip.open .in{transform:rotateY(180deg)}
+.flip .f,.flip .b{position:absolute;inset:0;border-radius:14px;padding:12px 14px;backface-visibility:hidden;display:flex;flex-direction:column;justify-content:center}
+.flip .f{background:var(--paper);border:2px solid var(--line);font-family:var(--display);font-weight:800;font-size:1.25rem}
+.flip .f small{font-family:var(--body);font-weight:600;font-size:.78rem;color:var(--muted)}
+.flip .b{background:var(--accent);color:var(--paper);transform:rotateY(180deg);font-weight:600;font-size:.95rem;line-height:1.35}
+@media (prefers-reduced-motion: reduce){.flip .in{transition:none}}
+
+/* matrices */
+.mat{display:inline-flex;align-items:stretch;vertical-align:middle;margin:0 3px}
+.mat .br{width:7px;border:2px solid currentColor}
+.mat .br.l{border-right:0;border-radius:4px 0 0 4px}
+.mat .br.r{border-left:0;border-radius:0 4px 4px 0}
+.mat .g{display:grid;gap:2px 12px;padding:3px 6px;font-family:var(--mono);font-size:.9rem;text-align:center;font-variant-numeric:tabular-nums}
+.mx{display:inline-grid;grid-template-columns:repeat(2,62px);gap:6px;padding:6px 10px;border-left:3px solid var(--ink);border-right:3px solid var(--ink);border-radius:6px;vertical-align:middle}
+.mx input{width:62px;padding:4px 6px;border:2px solid var(--line);border-radius:8px;background:var(--bg);font-family:var(--mono);text-align:center}
+.mx input[readonly]{opacity:.6}
+.vin{width:62px;padding:3px 5px;border:2px solid var(--line);border-radius:8px;background:var(--bg);font-family:var(--mono);text-align:center}
+.sl{display:grid;grid-template-columns:minmax(110px,auto) minmax(0,1fr) 56px;gap:8px;align-items:center;font-size:.92rem}
+.sl input[type=range]{width:100%;accent-color:var(--accent)}
+.sl output{font-family:var(--mono);text-align:right}
+.sliders{display:flex;flex-direction:column;gap:4px;margin:.5em 0}
+
+/* receipt */
+.receipt{font-family:var(--mono);background:var(--paper);border:2px dashed var(--line);border-radius:12px;padding:12px 14px;font-size:.92rem}
+.receipt .line{display:flex;justify-content:space-between;gap:10px}
+.receipt .tot{border-top:2px dashed var(--line);margin-top:6px;padding-top:6px;font-weight:700;color:var(--accent)}
+
+/* meters */
+.meter{height:14px;background:var(--grid);border-radius:999px;overflow:hidden;margin:4px 0}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width .2s}
+@media (prefers-reduced-motion: reduce){.meter i{transition:none}}
+.score{display:flex;gap:14px;flex-wrap:wrap;font-weight:800}
+.score span{background:var(--accent-soft);color:var(--accent);border-radius:10px;padding:3px 10px}
+.answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:.6em 0}
+.ans{border:2px solid var(--line);background:var(--paper);border-radius:12px;padding:10px;cursor:pointer;font-weight:800;font-family:var(--display);font-size:1.05rem}
+.ans:hover{border-color:var(--accent)}
+.ans.right{background:var(--p3-soft);border-color:var(--good);color:var(--good)}
+.ans.wrong{background:var(--pop-soft);border-color:var(--bad);color:var(--bad)}
+
+/* notes + nav */
+.notes{max-width:1180px;margin:14px auto 0;background:var(--p2-soft);border:2px solid var(--p2);border-radius:14px;padding:12px 16px}
+.notes b{color:var(--p2);letter-spacing:.08em;font-size:.75rem;text-transform:uppercase;display:block;margin-bottom:2px}
+.nav{display:flex;align-items:center;gap:12px;padding-block:10px 12px;border-top:2px solid var(--line)}
+.nav .where{flex:1;min-width:0;font-size:.88rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--p1),var(--p2),var(--p3));transition:width .25s}
+@media (prefers-reduced-motion: reduce){.bar i{transition:none}}
+.kbd{font-family:var(--mono);font-size:.78rem;border:2px solid var(--line);border-radius:6px;padding:0 5px;background:var(--paper)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%;height:100%;aspect-ratio:auto;background:transparent;border-radius:0}
+.toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-weight:800;z-index:60}
+</style>
+
+<header class="top">
+  <div class="brand"><span>Matrix</span> <span>Machine</span> <span>Lab</span></div>
+  <nav class="tabs" id="tabs" aria-label="Parts"></nav>
+  <div class="spacer"></div>
+  <div class="swatches" id="swatches" aria-label="Color palette"></div>
+  <button class="tool" id="notesBtn" aria-pressed="false" title="Speaker notes (N)">Notes</button>
+  <button class="tool" id="fsBtn" title="Full screen (F)">Full screen</button>
+</header>
+
+<main id="stage">
+
+<!-- ================= START ================= -->
+<section class="slide" data-c="pop" data-part="Start" data-title="Welcome">
+  <span class="eyebrow">QMB 6875 · No-panic edition · Allie McCutcheon</span>
+  <h1>A matrix is a <em>machine</em> that moves arrows.<br>That's the whole night.</h1>
+  <p class="read">None of this is on our exam, and you don't need to memorize anything. Click around, break things, and watch the math redo itself. Arrow keys move between slides; <span class="kbd">N</span> shows the speaker notes.</p>
+  <div class="cards">
+    <button class="card c1" data-jump="p1"><span class="who">Person 1</span><h2>The basics, from zero</h2><span>Arrows, the matrix machine, special directions, taking it apart, the undo button.</span></button>
+    <button class="card c2" data-jump="p2"><span class="who">Person 2</span><h2>The lemonade stand</h2><span>Two drinks, falling prices, a shared pitcher. Find the top of the profit hill.</span></button>
+    <button class="card c3" data-jump="p3"><span class="who">Person 3</span><h2>Bowls, hills &amp; Pringles</h2><span>Quadratic forms, hiking-map contour lines, and a quiz.</span></button>
+  </div>
+  <aside class="notes"><b>Say</b>“Show of hands, no judgment: who looked at the word eigenvalue this week and felt their soul leave their body? Same. None of this is on the exam. The whole night is one idea: a matrix is a machine that moves arrows.”</aside>
+</section>
+
+<section class="slide" data-c="pop" data-part="Start" data-title="Jargon translator">
+  <span class="eyebrow">Cheat sheet</span>
+  <h1>Every scary word, in <em>normal-person</em> language</h1>
+  <p class="small">Tap a card to flip it.</p>
+  <div class="flips" id="flips"></div>
+  <div class="row" style="margin-top:12px"><button class="btn" id="flipAll">Flip all</button></div>
+  <aside class="notes"><b>Say</b>“Every scary word tonight has a normal meaning. Here's the cheat sheet; I'll point back to it.” Don't read all of them; flip three or four.</aside>
+</section>
+
+<!-- ================= PERSON 1 ================= -->
+<section class="slide" data-c="p1" data-part="Person 1" data-title="Vectors are shopping lists" id="p1">
+  <span class="eyebrow">Person 1 · step 1</span>
+  <h1>Vectors are <em>shopping lists</em> (and arrows)</h1>
+  <div class="cols">
+    <div class="read">
+      <p>I buy 2 apples and 1 banana: that's the vector (2, 1). My friend buys (1, 3). Put the bags together and you just add apples to apples and bananas to bananas.</p>
+      <div class="row">
+        <b class="hl">me</b> (<input class="vin" id="u1" value="2" inputmode="decimal" aria-label="my apples">, <input class="vin" id="u2" value="1" inputmode="decimal" aria-label="my bananas">)
+        &nbsp;<b class="pop">friend</b> (<input class="vin" id="v1" value="1" inputmode="decimal" aria-label="friend apples">, <input class="vin" id="v2" value="3" inputmode="decimal" aria-label="friend bananas">)
+        &nbsp;times <input class="vin" id="kk" value="2" inputmode="decimal" aria-label="scale">
+      </div>
+      <div id="vecOut" style="margin-top:10px"></div>
+      <div class="plain"><b>In plain English</b>Add = combine the lists. Multiply by a number = make the arrow longer, shorter, or flip it.</div>
+      <p class="small">Drag the arrow tips on the grid.</p>
+    </div>
+    <div class="panel"><h3>On a graph, a list is an arrow</h3><canvas id="cvVec"></canvas>
+      <div class="legend"><span><i style="background:var(--p1)"></i>me</span><span><i style="background:var(--pop)"></i>friend</span><span><i style="background:var(--ink)"></i>together</span><span><i style="background:var(--p3)"></i>scaled</span></div></div>
+  </div>
+  <aside class="notes"><b>Say</b>“A vector is just a list of numbers. On a graph it's an arrow. Adding is: walk along one arrow, then the other. Times 2 makes it twice as long; a negative number flips it. That's literally all vectors are.”</aside>
+</section>
+
+<section class="slide" data-c="p1" data-part="Person 1" data-title="The matrix machine">
+  <span class="eyebrow">Person 1 · step 2</span>
+  <h1>A matrix is a <em>machine</em> that bends the whole grid</h1>
+  <div class="cols">
+    <div class="read">
+      <div class="row"><span class="small">The machine</span> <div class="mx" id="mmx"></div></div>
+      <div class="row" style="margin-top:8px" id="machinePresets"></div>
+      <div class="sl" style="margin-top:10px"><label for="machT">Run the machine</label><input type="range" id="machT" min="0" max="1" step="0.01" value="1"><output id="machTo">100%</output></div>
+      <div class="row"><button class="btn solid" id="machPlay">Play</button></div>
+      <h2 style="margin-top:14px">Squash meter (the determinant)</h2>
+      <div class="meter" aria-hidden="true"><i id="detMeter"></i></div>
+      <div id="detOut"></div>
+      <div class="plain"><b>In plain English</b>The determinant is how much the machine stretches area. The yellow square starts with area 1. If the determinant hits 0, everything gets squashed flat.</div>
+    </div>
+    <div class="panel"><h3>Graph paper, before and after</h3><canvas id="cvMach"></canvas>
+      <div class="legend"><span><i style="background:var(--p2)"></i>the unit square</span><span><i style="background:var(--p1)"></i>where (1,0) lands = column 1</span><span><i style="background:var(--pop)"></i>where (0,1) lands = column 2</span></div></div>
+  </div>
+  <aside class="notes"><b>Say</b>“Think of a matrix as a machine: feed it the whole graph paper, and it bends it. Here's our machine all night, [1 1; 1 2]. The columns are exactly where the two little arrows land.” Try the presets: stretch, shear, rotate, and squash (determinant 0).</aside>
+</section>
+
+<section class="slide" data-c="p1" data-part="Person 1" data-title="Grocery bill">
+  <span class="eyebrow">Person 1 · step 3</span>
+  <h1>Matrix multiplication is a <em>grocery bill</em></h1>
+  <div class="cols">
+    <div class="read">
+      <p>Two stores. Each <b>row</b> of the matrix is one store's price list. My order is the vector. Each store's bill is <b>row times column</b>: multiply the pairs, then add.</p>
+      <table class="t">
+        <tr><th></th><th>Apple $</th><th>Banana $</th></tr>
+        <tr><td><b>Store 1</b></td><td><input class="vin" id="g11" value="1" inputmode="decimal" aria-label="store 1 apple price"></td><td><input class="vin" id="g12" value="1" inputmode="decimal" aria-label="store 1 banana price"></td></tr>
+        <tr><td><b>Store 2</b></td><td><input class="vin" id="g21" value="1" inputmode="decimal" aria-label="store 2 apple price"></td><td><input class="vin" id="g22" value="2" inputmode="decimal" aria-label="store 2 banana price"></td></tr>
+        <tr><td><b>My order</b></td><td><input class="vin" id="ga" value="2" inputmode="decimal" aria-label="apples"></td><td><input class="vin" id="gb" value="1" inputmode="decimal" aria-label="bananas"></td></tr>
+      </table>
+      <div class="plain"><b>In plain English</b>Row times column, multiply the pairs, add them up. That's the entire rule. And order matters: socks then shoes is not shoes then socks.</div>
+    </div>
+    <div class="panel"><h3>Receipts</h3><div id="receipts" class="row" style="align-items:stretch;gap:12px"></div>
+      <div class="eq" id="groceryEq" style="margin-top:12px"></div></div>
+  </div>
+  <aside class="notes"><b>Say</b>“Store 1 charges $1 an apple and $1 a banana; Store 2 charges $1 and $2. My bill at Store 1: 1 times 2 plus 1 times 1 is $3. Store 2: 1 times 2 plus 2 times 1 is $4. That's matrix multiplication.” Change a price and watch the receipt update.</aside>
+</section>
+
+<section class="slide" data-c="p1" data-part="Person 1" data-title="Eigenvector hunt">
+  <span class="eyebrow">Person 1 · step 4</span>
+  <h1>Hunt for the directions the machine <em>doesn't twist</em></h1>
+  <div class="cols">
+    <div class="read">
+      <div class="row"><span class="small">Machine</span> <div class="mx p1mx"></div></div>
+      <div class="row p1presets" style="margin-top:6px"></div>
+      <p style="margin-top:10px">Turn the grey arrow. The machine sends it to the colored arrow. Most directions get <b>twisted</b>. Find the two that only get <b>stretched</b>.</p>
+      <div class="sl"><label for="huntA">Aim the arrow</label><input type="range" id="huntA" min="0" max="180" step="0.5" value="20"><output id="huntAo">20°</output></div>
+      <div class="small">Twist amount:</div><div class="meter"><i id="twistMeter"></i></div>
+      <div id="huntOut"></div>
+      <div class="row" style="margin-top:6px"><button class="btn" id="huntReveal">Show me the answers</button><button class="btn" id="huntReset">Reset hunt</button></div>
+    </div>
+    <div class="panel"><h3>Input arrow vs. output arrow</h3><canvas id="cvHunt"></canvas>
+      <div class="legend"><span><i style="background:var(--muted)"></i>what goes in</span><span><i style="background:var(--accent)"></i>what comes out</span><span><i style="background:var(--p3)"></i>found directions</span></div></div>
+  </div>
+  <aside class="notes"><b>Say</b>“Most arrows get turned and stretched. But a couple of special directions don't turn at all. Those are eigenvectors, and how much they stretch is the eigenvalue. Eigen is German for own: the machine's own directions.” Drag or slide until the twist meter hits zero.</aside>
+</section>
+
+<section class="slide" data-c="p1" data-part="Person 1" data-title="The stretch recipe">
+  <span class="eyebrow">Person 1 · step 5</span>
+  <h1>The recipe for the <em>stretch amounts</em></h1>
+  <div class="cols">
+    <div class="read">
+      <div class="row"><span class="small">Machine</span> <div class="mx p1mx"></div></div>
+      <div id="recipeOut" style="margin-top:8px"></div>
+    </div>
+    <div class="panel"><h3>The unit circle becomes an oval</h3><canvas id="cvEig"></canvas>
+      <div class="row" style="margin-top:8px"><button class="btn solid" id="eigPlay">Play</button></div>
+      <div class="legend"><span><i style="background:var(--muted)"></i>before</span><span><i style="background:var(--ink)"></i>after</span><span><i style="background:var(--p3)"></i>stretched direction</span><span><i style="background:var(--pop)"></i>squished direction</span></div></div>
+  </div>
+  <aside class="notes"><b>Say</b>“Trace is the diagonal added up. Determinant is the diagonal multiplied minus the other diagonal multiplied. Plug into the recipe, use the high-school quadratic formula, and the two numbers always add to the trace and multiply to the determinant, so you can check yourself.”</aside>
+</section>
+
+<section class="slide" data-c="p1" data-part="Person 1" data-title="Turn, stretch, turn back">
+  <span class="eyebrow">Person 1 · step 6 · spectral decomposition</span>
+  <h1>Every mirror-image matrix is just <em>turn, stretch, turn back</em></h1>
+  <div class="cols">
+    <div class="read">
+      <div class="row"><span class="small">Machine</span> <div class="mx p1mx"></div></div>
+      <div id="specOut"></div>
+      <div class="plain"><b>In plain English</b>Rotate a photo, stretch it in an editing app, rotate it back. <span class="m">H</span> holds the special directions; <span class="m">Λ</span> (lambda) holds how much to stretch.</div>
+    </div>
+    <div class="panel"><h3>One move at a time</h3><canvas id="cvSpec"></canvas>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" data-stage="0">Start</button><button class="btn" data-stage="1">1 · Turn</button><button class="btn" data-stage="2">2 · Stretch</button><button class="btn" data-stage="3">3 · Turn back</button>
+      </div>
+      <div class="small" id="specStageTxt" style="margin-top:6px"></div></div>
+  </div>
+  <aside class="notes"><b>Say</b>“Spectral decomposition sounds terrifying, but it just says this machine is three simple moves: turn the picture so the special directions line up with the axes, stretch, turn back.” Click the buttons in order. Then check the top-left number by multiplying back.</aside>
+</section>
+
+<section class="slide" data-c="p1" data-part="Person 1" data-title="The smoothie trick">
+  <span class="eyebrow">Person 1 · step 7 · Cholesky</span>
+  <h1>Cholesky: the <em>square root</em> of a matrix</h1>
+  <div class="cols">
+    <div class="read">
+      <div class="row"><span class="small">Machine</span> <div class="mx p1mx"></div></div>
+      <p style="margin-top:8px">Like 9 = 3 × 3, find a triangular <span class="m">L</span> with <span class="m">A = L L</span>ᵀ. Recipe: <b>root the corner, divide down, root what's left.</b></p>
+      <div id="cholOut"></div>
+    </div>
+    <div class="panel"><h3>The smoothie trick: independent in, correlated out</h3><canvas id="cvChol"></canvas>
+      <div class="row" style="margin-top:8px"><button class="btn solid" id="blend">Blend!</button><button class="btn" id="unblend">Unblend</button><button class="btn" id="cholRedraw">New ingredients</button></div>
+      <div class="small" id="cholStat"></div></div>
+  </div>
+  <aside class="notes"><b>Say</b>“Cholesky is a square root for matrices. Why care? It's the recipe for random numbers that move together, like dads' and sons' heights. Start with independent random numbers, multiply by L, and now they're correlated: separate ingredients in, smoothie out.” Hit Blend.</aside>
+</section>
+
+<section class="slide" data-c="p1" data-part="Person 1" data-title="The undo button">
+  <span class="eyebrow">Person 1 · step 8 · inverse</span>
+  <h1>The inverse is the <em>undo button</em></h1>
+  <div class="cols">
+    <div class="read">
+      <div class="row"><span class="small">Machine</span> <div class="mx p1mx"></div></div>
+      <div id="invOut" style="margin-top:8px"></div>
+      <div class="plain"><b>In plain English</b>Swap the diagonal, flip the signs of the other two, divide by the determinant. Machine then undo = do nothing. If the determinant is 0, you can't un-squash a pancake.</div>
+    </div>
+    <div class="panel"><h3>Run the machine, then undo it</h3><canvas id="cvUndo"></canvas>
+      <div class="row" style="margin-top:8px"><button class="btn solid" id="runM">Run machine</button><button class="btn" id="runU">Undo</button><button class="btn" id="runR">Reset</button></div>
+      <div class="small" id="undoMsg" style="margin-top:6px"></div></div>
+  </div>
+  <aside class="notes"><b>Say</b>“The inverse is the undo button: swap, flip, divide. Machine then undo gives the do-nothing matrix.” Try the [1 1; 1 1] preset to show the pancake: determinant 0, no undo.</aside>
+</section>
+
+<section class="slide" data-c="p1" data-part="Person 1" data-title="Person 1 cheat sheet">
+  <span class="eyebrow">Person 1 · cheat sheet</span>
+  <h1>Everything about our machine, <em>in one table</em></h1>
+  <div class="cols">
+    <div class="tablewrap panel"><table class="t" id="sumTable"></table></div>
+    <div class="read">
+      <div class="row"><span class="small">Machine</span> <div class="mx p1mx"></div></div>
+      <div class="row p1presets" style="margin-top:6px"></div>
+      <div class="plain" style="margin-top:12px"><b>The one thing to remember</b>A matrix is a machine. Everything else tonight is just poking at that machine.</div>
+      <p class="small">If the professor hands out a different matrix, type it in. Every Person 1 slide updates.</p>
+    </div>
+  </div>
+  <aside class="notes"><b>Say</b>“If you remember one thing: a matrix is a machine. Special directions it doesn't twist, take it apart into turn-stretch-turn or a square root, and usually there's an undo button.”</aside>
+</section>
+
+<!-- ================= PERSON 2 ================= -->
+<section class="slide" data-c="p2" data-part="Person 2" data-title="The lemonade stand" id="p2">
+  <span class="eyebrow">Person 2 · the stand</span>
+  <h1>Our lemonade stand sells <em>two drinks</em></h1>
+  <div class="cols">
+    <div class="read">
+      <p>Prices are in cents per cup. Sell more of a drink, and you have to price it lower. The drinks are <b>substitutes</b>: lots of iced tea steals lemonade customers. And both drinks share one pitcher, so making more of one makes the other more expensive.</p>
+      <div id="firmFormulas"></div>
+    </div>
+    <div class="panel"><h3>Run the stand</h3><div class="sliders" id="firmSliders"></div>
+      <div class="row"><button class="btn" id="firmReset">Back to the class example</button></div></div>
+  </div>
+  <aside class="notes"><b>Say</b>“I got the business one, so let's make it a lemonade stand. Prices drop the more you sell, the drinks steal each other's customers, and they share one pitcher. Multiply it out: profit = 50q₁ + 40q₂ − 2q₁² − 2q₂² − 2q₁q₂. The professor's hint, ‘it's a quadratic form,’ just means squares and times-each-other terms packed into a little grid.”</aside>
+</section>
+
+<section class="slide" data-c="p2" data-part="Person 2" data-title="Find the top of the hill">
+  <span class="eyebrow">Person 2 · game</span>
+  <h1>Can you find the <em>top of the profit hill</em>?</h1>
+  <div class="cols">
+    <div class="read">
+      <p>The map shows profit like a hiking map: brighter means more money. <b>Click or drag</b> on the map to pick how many cups of each drink to sell.</p>
+      <div id="guessOut"></div>
+      <div class="meter"><i id="guessMeter"></i></div>
+      <div class="row" style="margin-top:8px"><button class="btn" id="showTop">Show the math answer</button></div>
+      <div id="firmSolve" style="margin-top:10px"></div>
+      <div class="sliders" id="firmSlidersMini"></div>
+    </div>
+    <div class="panel"><h3>Profit map (cents)</h3><canvas id="cvFirm"></canvas>
+      <div class="legend"><span><i style="background:var(--p2)"></i>more profit</span><span><i style="background:var(--pop)"></i>your guess</span><span><i style="background:var(--p3)"></i>the true top</span></div></div>
+  </div>
+  <aside class="notes"><b>Say</b>“The top of a hill is where it's flat: slope zero in both directions. Two equations, two unknowns, like high school: 10 lemonades and 5 iced teas, at 37.5¢ and 40¢, for $3.50. Not exactly a startup.” Then drag ‘pitcher sharing’ up past 3: the hill becomes a Pringle, and the math says to sell only one drink.</aside>
+</section>
+
+<!-- ================= PERSON 3 ================= -->
+<section class="slide" data-c="p3" data-part="Person 3" data-title="Bowls, hills and Pringles" id="p3">
+  <span class="eyebrow">Person 3 · the shape lab</span>
+  <h1>Every quadratic form is a <em>bowl, hill, Pringle or half-pipe</em></h1>
+  <div class="cols">
+    <div class="read">
+      <div id="qfFormula"></div>
+      <div class="sliders" id="qfSliders"></div>
+      <div class="row" id="qfPresets"></div>
+      <div id="qfClass" style="margin-top:10px"></div>
+      <div class="plain"><b>In plain English</b>Diagonal numbers squish and stretch. The off-diagonal number tilts. Turn the tilt up too far and the bowl breaks into a Pringle.</div>
+    </div>
+    <div class="panel"><h3>Hiking map: color = height, lines = same height</h3><canvas id="cvQF"></canvas>
+      <div class="legend"><span><i style="background:var(--p3)"></i>above zero</span><span><i style="background:var(--pop)"></i>below zero</span><span><i style="background:var(--ink)"></i>contour q = 1</span></div></div>
+  </div>
+  <aside class="notes"><b>Say</b>“A quadratic form is just squares and a times-each-other term. Drawing 3D on a whiteboard is hard, so we draw from above, like a hiking map. Diagonal = squish, off-diagonal = tilt.” Click through the presets.</aside>
+</section>
+
+<section class="slide" data-c="p3" data-part="Person 3" data-title="Turn the knob">
+  <span class="eyebrow">Person 3 · the knob</span>
+  <h1>Turn the knob: circle → oval → lines → <em>X-curves</em></h1>
+  <div class="cols">
+    <div class="read">
+      <div class="eq big"><span class="m">A</span> = <span id="famMat"></span></div>
+      <div class="sl"><label for="famT">Off-diagonal knob t</label><input type="range" id="famT" min="-2.5" max="2.5" step="0.05" value="0.5"><output id="famTo">0.50</output></div>
+      <div id="famOut" style="margin-top:10px"></div>
+      <div class="row" style="margin-top:8px"><button class="btn" data-t="0">t = 0</button><button class="btn" data-t="0.5">t = 0.5</button><button class="btn" data-t="1">t = 1</button><button class="btn" data-t="2">t = 2</button><button class="btn solid" id="famPlay">Sweep</button></div>
+    </div>
+    <div class="panel"><h3>Contour line q = 1</h3><canvas id="cvFam"></canvas></div>
+  </div>
+  <aside class="notes"><b>Say</b>“Keep the diagonal at 1 and slowly turn up the off-diagonal. At zero, a circle. A little, and it tilts into an oval. At t = 1 the oval breaks open into two lines: a half-pipe. Past 1, it bends into X-curves: a Pringle.”</aside>
+</section>
+
+<section class="slide" data-c="p3" data-part="Person 3" data-title="Shape quiz">
+  <span class="eyebrow">Person 3 · quiz</span>
+  <h1>Bowl, hill, Pringle or half-pipe? <em>Your call.</em></h1>
+  <div class="cols">
+    <div class="read">
+      <div class="score"><span id="qScore">Score 0</span><span id="qStreak">Streak 0</span><span id="qBest">Best 0</span></div>
+      <div class="eq big" id="quizQ" style="margin-top:12px"></div>
+      <div class="answers" id="quizA"></div>
+      <div id="quizFb"></div>
+      <div class="row" style="margin-top:8px"><button class="btn solid" id="quizNext">Next matrix</button></div>
+      <div class="plain"><b>The quick test</b>Bowl: top-left &gt; 0 and det &gt; 0. Hill: top-left &lt; 0 and det &gt; 0. Pringle: det &lt; 0. Half-pipe: det = 0.</div>
+    </div>
+    <div class="panel"><h3>The answer, drawn</h3><canvas id="cvQuiz"></canvas></div>
+  </div>
+  <aside class="notes"><b>Tip</b>Hand this to the class: “Shout out the shape.” The determinant is top-left times bottom-right minus the off-diagonal squared.</aside>
+</section>
+
+<section class="slide" data-c="p3" data-part="Person 3" data-title="Why anyone cares">
+  <span class="eyebrow">Person 3 · why it matters</span>
+  <h1>Tilted ovals are <em>dads vs. sons</em>, and the line is regression</h1>
+  <div class="cols">
+    <div class="read">
+      <p>Plot dads' heights against sons' heights. The bell-curve contour lines are tilted ovals: level sets of a quadratic form. The tilt is the correlation, and the line through the ovals is the regression line.</p>
+      <div class="sl"><label for="rho">Correlation</label><input type="range" id="rho" min="-0.95" max="0.95" step="0.05" value="0.5"><output id="rhoO">0.50</output></div>
+      <table class="t" style="margin-top:12px">
+        <tr><th>Where</th><th>Shape</th><th>We look for</th></tr>
+        <tr><td>Regression (least squares)</td><td>bowl</td><td>the bottom = best-fit line</td></tr>
+        <tr><td>Lemonade stand</td><td>hill</td><td>the top = most profit</td></tr>
+        <tr><td>2D bell curve</td><td>ovals</td><td>the tilt = correlation</td></tr>
+      </table>
+    </div>
+    <div class="panel"><h3>Dads' vs. sons' heights (standardized)</h3><canvas id="cvBvn"></canvas>
+      <div class="legend"><span><i style="background:var(--p3)"></i>bell-curve contours</span><span><i style="background:var(--p2)"></i>regression line</span><span><i style="background:var(--muted)"></i>45° line</span></div></div>
+  </div>
+  <aside class="notes"><b>Say</b>“This is the picture the professor keeps talking about. He said 80% of data science is regression, and regression is literally this picture. Quadratic forms are the shape hiding underneath it.”</aside>
+</section>
+
+<!-- ================= WRAP ================= -->
+<section class="slide" data-c="pop" data-part="Wrap-up" data-title="One sentence">
+  <span class="eyebrow">The whole night</span>
+  <h1 style="font-size:clamp(2rem,5vw,3.4rem)">A matrix is a <em>machine</em> that moves arrows.</h1>
+  <p class="big">Eigenvectors are the directions it doesn't twist. Everything else is just poking at the machine.</p>
+  <div class="row" style="margin-top:14px"><button class="btn solid" id="party">Celebrate</button></div>
+  <div class="tablewrap panel" style="margin-top:16px"><table class="t">
+    <tr><th>If someone asks…</th><th>Say</th></tr>
+    <tr><td>Spectral vs. Cholesky?</td><td>Spectral shows the shape: which directions stretch, by how much. Cholesky is what computers use to make correlated random numbers.</td></tr>
+    <tr><td>Why are the special directions at a right angle?</td><td>Because the matrix is a mirror image across its diagonal (symmetric).</td></tr>
+    <tr><td>What if he gives a different matrix?</td><td>Same recipe: trace and determinant, then λ² − trace·λ + det = 0. Type it into this lab and every slide updates.</td></tr>
+    <tr><td>Why are bell-curve contours never X-shaped?</td><td>Variance can't be negative, so that matrix is always a bowl.</td></tr>
+    <tr><td>What if the drinks were burgers and fries?</td><td>Complements: selling one raises the other's price, so the cross numbers flip sign and the hill changes shape.</td></tr>
+  </table></div>
+  <aside class="notes"><b>Say</b>“Questions? Or should I just keep talking about lemonade?”</aside>
+</section>
+
+</main>
+
+<footer class="nav">
+  <button class="tool" id="prev" aria-label="Previous slide">← Prev</button>
+  <div class="where"><span id="where"></span><div class="bar"><i id="barFill"></i></div></div>
+  <button class="tool" id="next" aria-label="Next slide">Next →</button>
+</footer>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+(function(){
+"use strict";
+/* ================= helpers ================= */
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const root=document.documentElement;
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function tok(n,el){ return getComputedStyle(el||root).getPropertyValue(n).trim(); }
+let slideEl=null; const C=n=>tok(n,slideEl||root);
+function f(x,d=3){ if(!isFinite(x)) return '—'; if(Math.abs(x)<5e-10) x=0; return (+x.toFixed(d)).toString().replace('-','−'); }
+function num(el,def){ const v=parseFloat(String(el.value).replace('−','-')); return isFinite(v)?v:def; }
+function mat(rows){ const n=rows[0].length; let cells=''; rows.forEach(r=>r.forEach(c=>{ cells+=`<span>${typeof c==='number'?f(c):c}</span>`; }));
+  return `<span class="mat"><span class="br l"></span><span class="g" style="grid-template-columns:repeat(${n},auto)">${cells}</span><span class="br r"></span></span>`; }
+const vec=(a,b)=>mat([[a],[b]]);
+function hexRgb(h){ h=h.replace('#',''); if(h.length===3) h=h.split('').map(c=>c+c).join(''); const n=parseInt(h,16); return [n>>16&255,n>>8&255,n&255]; }
+function setupCanvas(cv){ const r=cv.getBoundingClientRect(); const dpr=window.devicePixelRatio||1;
+  const w=Math.max(50,Math.round(r.width)), h=Math.max(50,Math.round(r.height));
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}
+  const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h); return {ctx,w,h}; }
+function view(w,h,x0,x1,y0,y1){ const pad=14; const s=Math.min((w-2*pad)/(x1-x0),(h-2*pad)/(y1-y0));
+  const cx=w/2-(x0+x1)/2*s, cy=h/2+(y0+y1)/2*s; return {s,X:x=>cx+x*s,Y:y=>cy-y*s,ix:px=>(px-cx)/s,iy:py=>(cy-py)/s}; }
+function grid(ctx,V,w,h,step=1){ ctx.save(); ctx.strokeStyle=C('--grid'); ctx.lineWidth=1;
+  const x0=Math.floor(V.ix(0)),x1=Math.ceil(V.ix(w)),y0=Math.floor(V.iy(h)),y1=Math.ceil(V.iy(0));
+  for(let x=x0;x<=x1;x+=step){ctx.beginPath();ctx.moveTo(V.X(x),0);ctx.lineTo(V.X(x),h);ctx.stroke();}
+  for(let y=y0;y<=y1;y+=step){ctx.beginPath();ctx.moveTo(0,V.Y(y));ctx.lineTo(w,V.Y(y));ctx.stroke();}
+  ctx.strokeStyle=C('--muted'); ctx.globalAlpha=.5; ctx.beginPath(); ctx.moveTo(V.X(0),0);ctx.lineTo(V.X(0),h);ctx.moveTo(0,V.Y(0));ctx.lineTo(w,V.Y(0));ctx.stroke(); ctx.restore(); }
+function arrow(ctx,V,x0,y0,x1,y1,color,width=3,dash){ const X0=V.X(x0),Y0=V.Y(y0),X1=V.X(x1),Y1=V.Y(y1);
+  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=width; ctx.lineCap='round'; if(dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(X0,Y0); ctx.lineTo(X1,Y1); ctx.stroke(); ctx.setLineDash([]);
+  const a=Math.atan2(Y1-Y0,X1-X0), L=Math.hypot(X1-X0,Y1-Y0); if(L>6){ const s=10+width;
+  ctx.beginPath(); ctx.moveTo(X1,Y1); ctx.lineTo(X1-s*Math.cos(a-.42),Y1-s*Math.sin(a-.42)); ctx.lineTo(X1-s*Math.cos(a+.42),Y1-s*Math.sin(a+.42)); ctx.closePath(); ctx.fill(); }
+  ctx.restore(); }
+function label(ctx,V,x,y,t,color,dx=7,dy=-7){ ctx.save(); ctx.fillStyle=color; ctx.font='800 14px '+tok('--body'); ctx.fillText(t,V.X(x)+dx,V.Y(y)+dy); ctx.restore(); }
+function eigSym(a,b,d){ const tr=a+d, det=a*d-b*b, disc=Math.sqrt(Math.max(0,(a-d)*(a-d)/4+b*b)); const l1=tr/2+disc, l2=tr/2-disc; let v1,v2;
+  if(Math.abs(b)>1e-12){ v1=[b,l1-a]; v2=[b,l2-a]; } else { if(a>=d){v1=[1,0];v2=[0,1];} else {v1=[0,1];v2=[1,0];} }
+  const nrm=v=>{const n=Math.hypot(v[0],v[1]); let r=[v[0]/n,v[1]/n]; if(r[0]<-1e-12||(Math.abs(r[0])<1e-12&&r[1]<0)) r=[-r[0],-r[1]]; return r;};
+  return {tr,det,l1,l2,v1,v2,h1:nrm(v1),h2:nrm(v2)}; }
+function chol(a,b,d){ if(!(a>0)) return {ok:false,why:'the top-left number has to be positive to take its square root.'};
+  const l11=Math.sqrt(a), l21=b/l11, r=d-l21*l21; if(!(r>1e-12)) return {ok:false,l11,l21,r,why:`what's left (${f(r)}) isn't positive, so there's no square root.`};
+  return {ok:true,l11,l21,l22:Math.sqrt(r)}; }
+function mul(A,B){ return [[A[0][0]*B[0][0]+A[0][1]*B[1][0],A[0][0]*B[0][1]+A[0][1]*B[1][1]],[A[1][0]*B[0][0]+A[1][1]*B[1][0],A[1][0]*B[0][1]+A[1][1]*B[1][1]]]; }
+function rng(seed){ let s=seed>>>0; return ()=>{ s=(s*1664525+1013904223)>>>0; return (s+.5)/4294967296; }; }
+function gauss(r){ return Math.sqrt(-2*Math.log(r()))*Math.cos(2*Math.PI*r()); }
+function contour(G,N,level){ const segs=[];
+  for(let j=0;j<N;j++) for(let i=0;i<N;i++){
+    const v=[G[j*(N+1)+i]-level,G[j*(N+1)+i+1]-level,G[(j+1)*(N+1)+i+1]-level,G[(j+1)*(N+1)+i]-level]; const P=[[i,j],[i+1,j],[i+1,j+1],[i,j+1]]; const pts=[];
+    for(let e=0;e<4;e++){ const a=v[e], b=v[(e+1)%4]; if((a<0)!==(b<0)){ const t=a/(a-b); const p=P[e], q=P[(e+1)%4]; pts.push([p[0]+t*(q[0]-p[0]),p[1]+t*(q[1]-p[1])]); } }
+    if(pts.length===2) segs.push(pts); else if(pts.length===4){ segs.push([pts[0],pts[1]]); segs.push([pts[2],pts[3]]); } }
+  return segs; }
+function drawSegs(ctx,segs,toPx,color,width,dash){ ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=width; ctx.lineCap='round'; if(dash) ctx.setLineDash(dash); ctx.beginPath();
+  for(const s of segs){ const a=toPx(s[0]), b=toPx(s[1]); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); } ctx.stroke(); ctx.restore(); }
+function heat(ctx,w,h,fn,colPos,colNeg,scale){ const N=110, off=document.createElement('canvas'); off.width=N; off.height=N; const o=off.getContext('2d'); const img=o.createImageData(N,N);
+  const bg=hexRgb(tok('--paper')), cp=hexRgb(colPos), cn=hexRgb(colNeg);
+  for(let j=0;j<N;j++) for(let i=0;i<N;i++){ const v=fn((i+.5)/N,(j+.5)/N); const t=Math.max(-1,Math.min(1,v/scale)); const c=t>=0?cp:cn, a=Math.abs(t)*.55; const k=(j*N+i)*4;
+    img.data[k]=bg[0]+(c[0]-bg[0])*a; img.data[k+1]=bg[1]+(c[1]-bg[1])*a; img.data[k+2]=bg[2]+(c[2]-bg[2])*a; img.data[k+3]=255; }
+  o.putImageData(img,0,0); ctx.save(); ctx.imageSmoothingEnabled=true; ctx.drawImage(off,0,0,w,h); ctx.restore(); }
+
+/* ================= confetti + toast ================= */
+const cf=$('#confetti'); let parts=[], cfRun=false;
+function confetti(n=140){ if(reduce){ toast('Nice!'); return; } const r=cf.getBoundingClientRect(); const cols=['--p1','--p2','--p3','--pop'].map(c=>tok(c));
+  for(let i=0;i<n;i++) parts.push({x:r.width/2+(Math.random()-.5)*r.width*.4,y:r.height*.35,vx:(Math.random()-.5)*12,vy:-Math.random()*12-4,s:5+Math.random()*6,c:cols[i%4],rot:Math.random()*6,vr:(Math.random()-.5)*.3,life:0});
+  if(!cfRun){ cfRun=true; requestAnimationFrame(cfStep); } }
+function cfStep(){ const {ctx,w,h}=setupCanvas(cf); parts=parts.filter(p=>p.y<h+20&&p.life<240);
+  for(const p of parts){ p.vy+=.35; p.vx*=.99; p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr; p.life++; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle=p.c; ctx.fillRect(-p.s/2,-p.s/3,p.s,p.s*.66); ctx.restore(); }
+  if(parts.length) requestAnimationFrame(cfStep); else { cfRun=false; setupCanvas(cf); } }
+let toastT=null; function toast(msg){ let t=$('.toast'); if(!t){ t=document.createElement('div'); t.className='toast'; t.setAttribute('role','status'); document.body.appendChild(t); } t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,1800); }
+$('#party').onclick=()=>{ confetti(220); toast('You survived linear algebra!'); };
+
+/* ================= palette + notes + nav ================= */
+const pals=[['highlighter','#5B4BDB','#D99A00','#0E9B78','#E5533D'],['ocean','#2563C9','#0B8FA3','#2E9E5B','#E0663A'],['berry','#B0307A','#E2702B','#7A45C9','#D6336C'],['retro','#C2412D','#2F7D8C','#C48A12','#3B5BA9']];
+$('#swatches').innerHTML=pals.map(p=>`<button class="sw" data-pal="${p[0]}" title="${p[0]} colors" aria-label="${p[0]} colors" aria-pressed="false">${p.slice(1).map(c=>`<i style="background:${c}"></i>`).join('')}</button>`).join('');
+function setPal(name){ if(name==='highlighter') root.removeAttribute('data-palette'); else root.setAttribute('data-palette',name);
+  $$('.sw').forEach(b=>b.setAttribute('aria-pressed',b.dataset.pal===name)); try{localStorage.setItem('mml-pal',name);}catch(e){} requestAnimationFrame(renderCurrent); }
+$$('.sw').forEach(b=>b.onclick=()=>setPal(b.dataset.pal));
+let savedPal='highlighter'; try{ savedPal=localStorage.getItem('mml-pal')||'highlighter'; }catch(e){} setPal(savedPal);
+
+const slides=$$('.slide'); let cur=0; const renderers={};
+const parts0=[...new Set(slides.map(s=>s.dataset.part))];
+$('#tabs').innerHTML=parts0.map(p=>{ const s=slides.find(x=>x.dataset.part===p); return `<button class="tab" data-c="${s.dataset.c}" data-part="${p}">${p}</button>`; }).join('');
+$$('#tabs .tab').forEach(t=>t.onclick=()=>go(slides.findIndex(s=>s.dataset.part===t.dataset.part)));
+$$('[data-jump]').forEach(b=>b.onclick=()=>go(slides.findIndex(s=>s.id===b.dataset.jump)));
+let showNotes=false; try{ showNotes=localStorage.getItem('mml-notes')==='1'; }catch(e){}
+function applyNotes(){ $$('.notes').forEach(n=>n.hidden=!showNotes); $('#notesBtn').setAttribute('aria-pressed',showNotes); }
+$('#notesBtn').onclick=()=>{ showNotes=!showNotes; try{localStorage.setItem('mml-notes',showNotes?'1':'0');}catch(e){} applyNotes(); };
+applyNotes();
+function go(i){ cur=Math.max(0,Math.min(slides.length-1,i)); slides.forEach((s,k)=>s.classList.toggle('on',k===cur)); slideEl=slides[cur];
+  const s=slides[cur]; $('#where').textContent=`${cur+1} / ${slides.length} · ${s.dataset.part} · ${s.dataset.title}`;
+  $('#barFill').style.width=((cur+1)/slides.length*100)+'%';
+  $$('#tabs .tab').forEach(t=>t.setAttribute('aria-current',t.dataset.part===s.dataset.part));
+  $('#stage').scrollTop=0; requestAnimationFrame(renderCurrent); }
+function renderCurrent(){ const fn=renderers[slides[cur].dataset.title]; if(fn) fn(); }
+$('#prev').onclick=()=>go(cur-1); $('#next').onclick=()=>go(cur+1);
+document.addEventListener('keydown',e=>{ if(e.target.matches('input,textarea')) return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1);} else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1);}
+  else if(e.key==='n'||e.key==='N') $('#notesBtn').click(); else if(e.key==='f'||e.key==='F') $('#fsBtn').click(); });
+$('#fsBtn').onclick=()=>{ try{ if(document.fullscreenElement) document.exitFullscreen(); else root.requestFullscreen().catch(()=>{}); }catch(e){} };
+window.addEventListener('resize',()=>requestAnimationFrame(renderCurrent));
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>requestAnimationFrame(renderCurrent));
+new MutationObserver(()=>requestAnimationFrame(renderCurrent)).observe(root,{attributes:true,attributeFilter:['data-theme']});
+
+/* ================= jargon flip cards ================= */
+const jargon=[['Vector','an arrow','A list of numbers, like a shopping list. On a graph, an arrow.'],['Matrix','a grid','A grid of numbers. Think: a machine that moves arrows.'],['Multiplication','row × column','Multiply the pairs, then add. A grocery bill.'],['Determinant','one number','How much the machine stretches area. 0 = squashed flat.'],['Inverse','A⁻¹','The undo button. Only exists if the determinant isn\'t 0.'],['Identity','I','The do-nothing machine. Like multiplying by 1.'],['Eigenvector','“own” direction','A direction the machine doesn\'t twist. It only stretches it.'],['Eigenvalue','λ','How much that special direction gets stretched.'],['Symmetric','mirror image','The grid is the same across its diagonal (top-right = bottom-left).'],['Spectral decomposition','A = HΛHᵀ','Turn, stretch, turn back.'],['Cholesky','A = LLᵀ','The square root of a matrix. Recipe for correlated random numbers.'],['Quadratic form','xᵀAx','A formula whose graph is a bowl, hill, Pringle or half-pipe.'],['Positive definite','always up','Every direction goes up, like the inside of a bowl.'],['Level set','contour line','All the spots at the same height, like a hiking map.']];
+$('#flips').innerHTML=jargon.map((j,i)=>`<button class="flip" id="flip${i}" aria-label="${j[0]}: ${j[2]}"><span class="in"><span class="f">${j[0]}<small>${j[1]}</small></span><span class="b">${j[2]}</span></span></button>`).join('');
+$$('.flip').forEach(b=>b.onclick=()=>b.classList.toggle('open'));
+$('#flipAll').onclick=()=>{ const anyClosed=$$('.flip').some(b=>!b.classList.contains('open')); $$('.flip').forEach(b=>b.classList.toggle('open',anyClosed)); };
+
+/* ================= P1: vectors ================= */
+const V1={u:[2,1],v:[1,3],k:2};
+function vecRead(){ V1.u=[num($('#u1'),2),num($('#u2'),1)]; V1.v=[num($('#v1'),1),num($('#v2'),3)]; V1.k=num($('#kk'),2); }
+function vecWrite(){ $('#u1').value=V1.u[0]; $('#u2').value=V1.u[1]; $('#v1').value=V1.v[0]; $('#v2').value=V1.v[1]; }
+function vecRender(){ const {u,v,k}=V1; const s=[u[0]+v[0],u[1]+v[1]], d=[u[0]-v[0],u[1]-v[1]], ku=[k*u[0],k*u[1]];
+  $('#vecOut').innerHTML=`<div class="eq">together: ${vec(f(u[0])+'+'+f(v[0]),f(u[1])+'+'+f(v[1]))} = <span class="box">${vec(s[0],s[1])}</span> &nbsp; difference: ${vec(d[0],d[1])} &nbsp; ${f(k)} × me: ${vec(ku[0],ku[1])}</div>`;
+  const cv=$('#cvVec'); const {ctx,w,h}=setupCanvas(cv);
+  const m=Math.max(4,...[0,u[0],v[0],s[0],ku[0],u[1],v[1],s[1],ku[1]].map(Math.abs))+1; const V=view(w,h,-m,m,-m,m); cv._V=V; grid(ctx,V,w,h,m>8?2:1);
+  arrow(ctx,V,u[0],u[1],s[0],s[1],C('--pop'),2,[6,5]); arrow(ctx,V,v[0],v[1],s[0],s[1],C('--p1'),2,[6,5]);
+  arrow(ctx,V,0,0,ku[0],ku[1],C('--p3'),6); arrow(ctx,V,0,0,s[0],s[1],C('--ink'),3); arrow(ctx,V,0,0,u[0],u[1],C('--p1'),4); arrow(ctx,V,0,0,v[0],v[1],C('--pop'),4);
+  label(ctx,V,u[0],u[1],'me',C('--p1')); label(ctx,V,v[0],v[1],'friend',C('--pop')); label(ctx,V,s[0],s[1],'together',C('--ink'));
+  for(const [p,c] of [[u,'--p1'],[v,'--pop']]){ ctx.fillStyle=C(c); ctx.beginPath(); ctx.arc(V.X(p[0]),V.Y(p[1]),8,0,7); ctx.fill(); } }
+['#u1','#u2','#v1','#v2','#kk'].forEach(id=>$(id).addEventListener('input',()=>{vecRead();vecRender();}));
+(function(){ const cv=$('#cvVec'); let drag=null;
+  cv.addEventListener('pointerdown',e=>{ const V=cv._V; if(!V) return; const r=cv.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
+    for(const key of ['u','v']){ const p=V1[key]; if(Math.hypot(V.X(p[0])-px,V.Y(p[1])-py)<18){ drag=key; cv.setPointerCapture(e.pointerId); return; } } });
+  cv.addEventListener('pointermove',e=>{ if(!drag) return; const V=cv._V, r=cv.getBoundingClientRect(); V1[drag]=[Math.round(V.ix(e.clientX-r.left)*2)/2,Math.round(V.iy(e.clientY-r.top)*2)/2]; vecWrite(); vecRender(); });
+  cv.addEventListener('pointerup',()=>drag=null); cv.addEventListener('pointercancel',()=>drag=null); })();
+renderers['Vectors are shopping lists']=vecRender;
+
+/* ================= P1: machine ================= */
+const MACH={M:[[1,1],[1,2]],t:1}; let machAnim=null;
+const mpre=[['Our machine',[[1,1],[1,2]]],['Stretch',[[2,0],[0,1]]],['Shear',[[1,1],[0,1]]],['Rotate 90°',[[0,-1],[1,0]]],['Flip',[[-1,0],[0,1]]],['Squash!',[[1,2],[0.5,1]]]];
+(function(){ const el=$('#mmx'); for(let i=0;i<2;i++) for(let j=0;j<2;j++){ const inp=document.createElement('input'); inp.id=`mach${i}${j}`; inp.value=MACH.M[i][j]; inp.inputMode='decimal'; inp.setAttribute('aria-label',`row ${i+1} column ${j+1}`); inp.oninput=()=>{ MACH.M[i][j]=num(inp,0); machRender(); }; el.appendChild(inp);} })();
+$('#machinePresets').innerHTML=mpre.map((p,i)=>`<button class="btn" data-mp="${i}">${p[0]}</button>`).join('');
+$$('[data-mp]').forEach(b=>b.onclick=()=>{ MACH.M=mpre[+b.dataset.mp][1].map(r=>r.slice()); for(let i=0;i<2;i++)for(let j=0;j<2;j++) $(`#mach${i}${j}`).value=MACH.M[i][j]; playMach(); });
+function machRender(){ const t=MACH.t, M=MACH.M; const Mt=[[1-t+t*M[0][0],t*M[0][1]],[t*M[1][0],1-t+t*M[1][1]]];
+  const cv=$('#cvMach'); const {ctx,w,h}=setupCanvas(cv); const V=view(w,h,-4,4,-4,4);
+  ctx.save(); ctx.strokeStyle=C('--grid'); ctx.lineWidth=1; for(let k=-4;k<=4;k++){ ctx.beginPath(); ctx.moveTo(V.X(k),0); ctx.lineTo(V.X(k),h); ctx.moveTo(0,V.Y(k)); ctx.lineTo(w,V.Y(k)); ctx.stroke(); } ctx.restore();
+  const P=(x,y)=>[Mt[0][0]*x+Mt[0][1]*y,Mt[1][0]*x+Mt[1][1]*y];
+  ctx.save(); ctx.strokeStyle=C('--muted'); ctx.globalAlpha=.75; ctx.lineWidth=1.2;
+  for(let k=-6;k<=6;k++){ ctx.beginPath(); for(let s=-6;s<=6;s+=.5){ const p=P(k,s); s===-6?ctx.moveTo(V.X(p[0]),V.Y(p[1])):ctx.lineTo(V.X(p[0]),V.Y(p[1])); } ctx.stroke();
+    ctx.beginPath(); for(let s=-6;s<=6;s+=.5){ const p=P(s,k); s===-6?ctx.moveTo(V.X(p[0]),V.Y(p[1])):ctx.lineTo(V.X(p[0]),V.Y(p[1])); } ctx.stroke(); } ctx.restore();
+  const sq=[P(0,0),P(1,0),P(1,1),P(0,1)]; ctx.save(); ctx.fillStyle=C('--p2'); ctx.globalAlpha=.45; ctx.beginPath(); sq.forEach((p,i)=>i?ctx.lineTo(V.X(p[0]),V.Y(p[1])):ctx.moveTo(V.X(p[0]),V.Y(p[1]))); ctx.closePath(); ctx.fill(); ctx.restore();
+  const c1=P(1,0), c2=P(0,1); arrow(ctx,V,0,0,c1[0],c1[1],C('--p1'),4); arrow(ctx,V,0,0,c2[0],c2[1],C('--pop'),4);
+  label(ctx,V,c1[0],c1[1],`(${f(c1[0],2)}, ${f(c1[1],2)})`,C('--p1')); label(ctx,V,c2[0],c2[1],`(${f(c2[0],2)}, ${f(c2[1],2)})`,C('--pop'));
+  $('#machTo').textContent=Math.round(t*100)+'%';
+  const det=M[0][0]*M[1][1]-M[0][1]*M[1][0]; const dt=Mt[0][0]*Mt[1][1]-Mt[0][1]*Mt[1][0];
+  $('#detMeter').style.width=Math.min(100,Math.abs(dt)/3*100)+'%';
+  $('#detOut').innerHTML=`<div class="eq">determinant = ${f(M[0][0])}·${f(M[1][1])} − ${f(M[0][1])}·${f(M[1][0])} = <span class="box">${f(det)}</span></div>`+
+   (Math.abs(det)<1e-9?'<span class="chip bad">Squashed flat! Area 0, no undo button.</span>':det<0?'<span class="chip warn">Negative: the grid got flipped over (area '+f(Math.abs(det))+')</span>':`<span class="chip good">Area becomes ${f(det)} × bigger</span>`); }
+function playMach(){ cancelAnimationFrame(machAnim); if(reduce){ MACH.t=1; $('#machT').value=1; machRender(); return; } const t0=performance.now();
+  const step=now=>{ MACH.t=Math.min(1,(now-t0)/1400); $('#machT').value=MACH.t; machRender(); if(MACH.t<1) machAnim=requestAnimationFrame(step); }; MACH.t=0; machAnim=requestAnimationFrame(step); }
+$('#machT').addEventListener('input',e=>{ MACH.t=+e.target.value; machRender(); }); $('#machPlay').onclick=playMach;
+renderers['The matrix machine']=machRender;
+
+/* ================= P1: grocery ================= */
+function groRender(){ const P=[[num($('#g11'),1),num($('#g12'),1)],[num($('#g21'),1),num($('#g22'),2)]], q=[num($('#ga'),2),num($('#gb'),1)];
+  const bill=P.map(r=>r[0]*q[0]+r[1]*q[1]); const best=bill[0]<=bill[1]?0:1;
+  $('#receipts').innerHTML=bill.map((b,i)=>`<div class="receipt" style="flex:1;min-width:170px"><div><b>STORE ${i+1}</b>${i===best&&bill[0]!==bill[1]?' &nbsp;<span class="chip good">cheaper</span>':''}</div>
+    <div class="line"><span>${f(q[0])} apple × $${f(P[i][0],2)}</span><span>$${f(q[0]*P[i][0],2)}</span></div>
+    <div class="line"><span>${f(q[1])} banana × $${f(P[i][1],2)}</span><span>$${f(q[1]*P[i][1],2)}</span></div>
+    <div class="line tot"><span>TOTAL</span><span>$${f(b,2)}</span></div></div>`).join('');
+  $('#groceryEq').innerHTML=`${mat(P)} ${vec(q[0],q[1])} = ${vec(f(P[0][0])+'·'+f(q[0])+' + '+f(P[0][1])+'·'+f(q[1]),f(P[1][0])+'·'+f(q[0])+' + '+f(P[1][1])+'·'+f(q[1]))} = <span class="box">${vec(bill[0],bill[1])}</span>`; }
+['#g11','#g12','#g21','#g22','#ga','#gb'].forEach(id=>$(id).addEventListener('input',groRender));
+renderers['Grocery bill']=groRender;
+
+/* ================= P1: shared matrix ================= */
+const P1={a:1,b:1,d:2};
+const presets=[['Our matrix',1,1,2],['[2 1; 1 2]',2,1,2],['[5 2; 2 2]',5,2,2],['[1 2; 2 1]',1,2,1],['[1 1; 1 1]',1,1,1]];
+$$('.p1mx').forEach((el,k)=>{ const mk=(key,ro)=>{ const inp=document.createElement('input'); inp.id=`p1_${k}_${key}${ro?'r':''}`; inp.inputMode='decimal'; inp.value=P1[key]; inp.dataset.key=key;
+  inp.setAttribute('aria-label',{a:'top-left',b:ro?'bottom-left (mirror)':'top-right',d:'bottom-right'}[key]); if(ro){inp.readOnly=true;inp.tabIndex=-1;} else inp.oninput=()=>{ P1[key]=num(inp,P1[key]); p1Sync(inp); onP1(); }; return inp; };
+  el.append(mk('a'),mk('b'),mk('b',true),mk('d')); });
+$$('.p1presets').forEach(el=>{ el.innerHTML=presets.map((p,i)=>`<button class="btn" data-pre="${i}">${p[0]}</button>`).join('');
+  el.querySelectorAll('[data-pre]').forEach(b=>b.onclick=()=>{ const p=presets[+b.dataset.pre]; P1.a=p[1];P1.b=p[2];P1.d=p[3]; p1Sync(); onP1(); }); });
+function p1Sync(skip){ $$('.p1mx input').forEach(inp=>{ if(inp!==skip) inp.value=P1[inp.dataset.key]; }); }
+function onP1(){ hunt.found=[false,false]; renderCurrent(); }
+const Amat=()=>[[P1.a,P1.b],[P1.b,P1.d]];
+
+/* eigen hunt */
+const hunt={ang:20,found:[false,false],reveal:false};
+function huntRender(){ const {a,b,d}=P1, E=eigSym(a,b,d); const th=hunt.ang*Math.PI/180, v=[Math.cos(th),Math.sin(th)], Av=[a*v[0]+b*v[1],b*v[0]+d*v[1]];
+  const nAv=Math.hypot(Av[0],Av[1]); const cos=nAv<1e-9?1:Math.abs(v[0]*Av[0]+v[1]*Av[1])/nAv; const twist=Math.acos(Math.min(1,cos))*180/Math.PI;
+  $('#huntAo').textContent=f(hunt.ang,1)+'°'; $('#twistMeter').style.width=Math.min(100,twist/90*100)+'%';
+  const near=[E.h1,E.h2].map(hv=>Math.abs(hv[0]*v[0]+hv[1]*v[1])>Math.cos(1.6*Math.PI/180));
+  near.forEach((n,i)=>{ if(n&&!hunt.found[i]){ hunt.found[i]=true; confetti(hunt.found.every(Boolean)?200:90); toast(hunt.found.every(Boolean)?'You found both special directions!':'Found one! The arrow only stretched.'); } });
+  const stretch=nAv*(v[0]*Av[0]+v[1]*Av[1]<0?-1:1);
+  $('#huntOut').innerHTML=`<div class="eq">twist = <span class="box">${f(twist,1)}°</span> ${twist<1.6?`<span class="chip good">No twist! Stretched ×${f(stretch,3)}</span>`:''}</div>
+    <div class="row">${[0,1].map(i=>hunt.found[i]||hunt.reveal?`<span class="chip good">Direction ${i+1}: (${f([E.h1,E.h2][i][0])}, ${f([E.h1,E.h2][i][1])}), stretch ×${f([E.l1,E.l2][i])}</span>`:`<span class="chip warn">Direction ${i+1}: not found yet</span>`).join(' ')}</div>`;
+  const cv=$('#cvHunt'); const {ctx,w,h}=setupCanvas(cv); const m=Math.max(2.2,Math.abs(E.l1)*1.1+.3,Math.abs(E.l2)*1.1+.3); const V=view(w,h,-m,m,-m,m); cv._V=V; grid(ctx,V,w,h,m>6?2:1);
+  ctx.save(); ctx.strokeStyle=C('--line'); ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(V.X(0),V.Y(0),V.s,0,7); ctx.stroke(); ctx.restore();
+  [0,1].forEach(i=>{ if(hunt.found[i]||hunt.reveal){ const hv=[E.h1,E.h2][i]; ctx.save(); ctx.strokeStyle=C('--p3'); ctx.lineWidth=2; ctx.setLineDash([6,5]); ctx.beginPath(); ctx.moveTo(V.X(-m*hv[0]),V.Y(-m*hv[1])); ctx.lineTo(V.X(m*hv[0]),V.Y(m*hv[1])); ctx.stroke(); ctx.restore(); } });
+  arrow(ctx,V,0,0,v[0],v[1],C('--muted'),4); arrow(ctx,V,0,0,Av[0],Av[1],twist<1.6?C('--p3'):C('--accent'),5);
+  label(ctx,V,v[0],v[1],'in',C('--muted')); label(ctx,V,Av[0],Av[1],'out',twist<1.6?C('--p3'):C('--accent'));
+  ctx.fillStyle=C('--muted'); ctx.beginPath(); ctx.arc(V.X(v[0]),V.Y(v[1]),8,0,7); ctx.fill(); }
+$('#huntA').addEventListener('input',e=>{ hunt.ang=+e.target.value; huntRender(); });
+$('#huntReveal').onclick=()=>{ hunt.reveal=!hunt.reveal; $('#huntReveal').textContent=hunt.reveal?'Hide the answers':'Show me the answers'; huntRender(); };
+$('#huntReset').onclick=()=>{ hunt.found=[false,false]; hunt.reveal=false; $('#huntReveal').textContent='Show me the answers'; huntRender(); };
+(function(){ const cv=$('#cvHunt'); let drag=false; const set=e=>{ const V=cv._V, r=cv.getBoundingClientRect(); let a=Math.atan2(V.iy(e.clientY-r.top),V.ix(e.clientX-r.left))*180/Math.PI; if(a<0) a+=180; if(a>180) a-=180; hunt.ang=Math.round(a*2)/2; $('#huntA').value=hunt.ang; huntRender(); };
+  cv.addEventListener('pointerdown',e=>{ drag=true; cv.setPointerCapture(e.pointerId); set(e); }); cv.addEventListener('pointermove',e=>{ if(drag) set(e); }); cv.addEventListener('pointerup',()=>drag=false); cv.addEventListener('pointercancel',()=>drag=false); })();
+renderers['Eigenvector hunt']=huntRender;
+
+/* recipe */
+let eigT=1, eigAnim=null;
+function recipeRender(){ const {a,b,d}=P1, E=eigSym(a,b,d);
+  $('#recipeOut').innerHTML=`<div class="steps">
+   <div class="step"><b class="n">1</b><div><b>Trace</b> = diagonal added up = ${f(a)} + ${f(d)} = <span class="hl">${f(E.tr)}</span></div></div>
+   <div class="step"><b class="n">2</b><div><b>Determinant</b> = ${f(a)}·${f(d)} − ${f(b)}·${f(b)} = <span class="hl">${f(E.det)}</span></div></div>
+   <div class="step"><b class="n">3</b><div>Recipe: λ² − ${f(E.tr)}λ + ${f(E.det)} = 0</div></div>
+   <div class="step"><b class="n">4</b><div>Quadratic formula: λ = <span class="box">${f(E.l1)}</span> and <span class="box">${f(E.l2)}</span></div></div>
+   <div class="step"><b class="n">✓</b><div>They add to ${f(E.l1+E.l2)} (the trace) and multiply to ${f(E.l1*E.l2)} (the determinant).</div></div></div>
+   <div class="plain"><b>In plain English</b>The machine stretches one special direction by ${f(E.l1,2)} and the other by ${f(E.l2,2)}.${E.l2<0?' A negative stretch means that direction gets flipped.':''}</div>`;
+  drawEig(); }
+function drawEig(){ const {a,b,d}=P1, E=eigSym(a,b,d); const cv=$('#cvEig'); const {ctx,w,h}=setupCanvas(cv); const M=[[1-eigT+eigT*a,eigT*b],[eigT*b,1-eigT+eigT*d]];
+  const m=Math.max(2,Math.abs(E.l1),Math.abs(E.l2))*1.15+.3; const V=view(w,h,-m,m,-m,m); grid(ctx,V,w,h,m>6?2:1);
+  const path=(T,col,lw,dash,fill)=>{ ctx.save(); ctx.strokeStyle=col; ctx.lineWidth=lw; if(dash) ctx.setLineDash(dash); ctx.beginPath(); for(let t=0;t<=360;t+=3){ const x=Math.cos(t*Math.PI/180),y=Math.sin(t*Math.PI/180); const X=T[0][0]*x+T[0][1]*y,Y=T[1][0]*x+T[1][1]*y; t?ctx.lineTo(V.X(X),V.Y(Y)):ctx.moveTo(V.X(X),V.Y(Y)); } if(fill){ctx.fillStyle=fill; ctx.globalAlpha=.25; ctx.fill(); ctx.globalAlpha=1;} ctx.stroke(); ctx.restore(); };
+  path([[1,0],[0,1]],C('--muted'),1.5,[4,4]); path(M,C('--ink'),3,null,C('--p2'));
+  const s1=1-eigT+eigT*E.l1, s2=1-eigT+eigT*E.l2; arrow(ctx,V,0,0,s1*E.h1[0],s1*E.h1[1],C('--p3'),4); arrow(ctx,V,0,0,s2*E.h2[0],s2*E.h2[1],C('--pop'),4);
+  label(ctx,V,s1*E.h1[0],s1*E.h1[1],'×'+f(E.l1,2),C('--p3')); label(ctx,V,s2*E.h2[0],s2*E.h2[1],'×'+f(E.l2,2),C('--pop'),7,18); }
+$('#eigPlay').onclick=()=>{ if(reduce){ eigT=1; drawEig(); return; } cancelAnimationFrame(eigAnim); const t0=performance.now(); const step=now=>{ eigT=Math.min(1,(now-t0)/1600); drawEig(); if(eigT<1) eigAnim=requestAnimationFrame(step); }; eigT=0; eigAnim=requestAnimationFrame(step); };
+renderers['The stretch recipe']=recipeRender;
+
+/* spectral */
+let specStage=0, specFrom=0, specT=1, specAnim=null;
+const stageTxt=['Start: a plain circle, with the two special directions marked.','1 · Turn: rotate so the special directions line up with the axes.','2 · Stretch: pull along each axis by the stretch amounts. The only step that changes shape.','3 · Turn back: rotate back. The result is exactly what the machine does.'];
+function stageMap(k,E){ const H=[[E.h1[0],E.h2[0]],[E.h1[1],E.h2[1]]], Ht=[[H[0][0],H[1][0]],[H[0][1],H[1][1]]], L=[[E.l1,0],[0,E.l2]]; return [[[1,0],[0,1]],Ht,mul(L,Ht),mul(H,mul(L,Ht))][k]; }
+function specRender(){ const {a,b,d}=P1, E=eigSym(a,b,d); const H=[[E.h1[0],E.h2[0]],[E.h1[1],E.h2[1]]], L=[[E.l1,0],[0,E.l2]];
+  $('#specOut').innerHTML=`<div class="eq big"><span class="m">A</span> = <span class="hl">H</span> · <span class="pop">Λ</span> · <span class="hl">H</span>ᵀ</div>
+   <div class="eq"><span class="hl">H</span> = ${mat(H)} (directions) &nbsp; <span class="pop">Λ</span> = ${mat(L)} (stretches)</div>
+   <div class="small">Check the top-left: ${f(E.l1)}×(${f(E.h1[0])})² + ${f(E.l2)}×(${f(E.h2[0])})² = ${f(E.l1*E.h1[0]**2)} + ${f(E.l2*E.h2[0]**2)} = <b>${f(E.l1*E.h1[0]**2+E.l2*E.h2[0]**2)}</b> <span class="check">✓</span></div>`;
+  drawSpec(); }
+function drawSpec(){ const {a,b,d}=P1, E=eigSym(a,b,d); const cv=$('#cvSpec'); const {ctx,w,h}=setupCanvas(cv);
+  const M0=stageMap(specFrom,E), M1=stageMap(specStage,E); const M=[[0,0],[0,0]]; for(let i=0;i<2;i++)for(let j=0;j<2;j++) M[i][j]=M0[i][j]+(M1[i][j]-M0[i][j])*specT;
+  const m=Math.max(2,Math.abs(E.l1),Math.abs(E.l2))*1.15+.3; const V=view(w,h,-m,m,-m,m); grid(ctx,V,w,h,m>6?2:1);
+  ctx.save(); ctx.strokeStyle=C('--ink'); ctx.fillStyle=C('--p2'); ctx.lineWidth=3; ctx.beginPath(); for(let t=0;t<=360;t+=3){ const x=Math.cos(t*Math.PI/180),y=Math.sin(t*Math.PI/180); const X=M[0][0]*x+M[0][1]*y,Y=M[1][0]*x+M[1][1]*y; t?ctx.lineTo(V.X(X),V.Y(Y)):ctx.moveTo(V.X(X),V.Y(Y)); } ctx.globalAlpha=.28; ctx.fill(); ctx.globalAlpha=1; ctx.stroke(); ctx.restore();
+  const tip=v=>[M[0][0]*v[0]+M[0][1]*v[1],M[1][0]*v[0]+M[1][1]*v[1]]; const a1=tip(E.h1), a2=tip(E.h2);
+  arrow(ctx,V,0,0,a1[0],a1[1],C('--p3'),4); arrow(ctx,V,0,0,a2[0],a2[1],C('--pop'),4);
+  $('#specStageTxt').textContent=stageTxt[specStage]; $$('[data-stage]').forEach(btn=>btn.classList.toggle('solid',+btn.dataset.stage===specStage)); }
+$$('[data-stage]').forEach(btn=>btn.onclick=()=>{ cancelAnimationFrame(specAnim); specFrom=specStage; specStage=+btn.dataset.stage; if(reduce){specT=1;drawSpec();return;} specT=0; const t0=performance.now();
+  const step=now=>{ specT=Math.min(1,(now-t0)/900); drawSpec(); if(specT<1) specAnim=requestAnimationFrame(step); else specFrom=specStage; }; specAnim=requestAnimationFrame(step); });
+renderers['Turn, stretch, turn back']=specRender;
+
+/* cholesky smoothie */
+let cholSeed=6875, blendT=0, blendAnim=null;
+function cholRender(){ const {a,b,d}=P1, Ch=chol(a,b,d), E=eigSym(a,b,d);
+  let html='<div class="steps">';
+  html+=`<div class="step"><b class="n">1</b><div><b>Root the corner:</b> √${f(a)} = ${a>0?`<span class="hl">${f(Ch.l11)}</span>`:'<span class="pop">not possible</span>'}</div></div>`;
+  if(Ch.l11) html+=`<div class="step"><b class="n">2</b><div><b>Divide down:</b> ${f(b)} ÷ ${f(Ch.l11)} = <span class="hl">${f(Ch.l21)}</span></div></div>
+    <div class="step"><b class="n">3</b><div><b>Root what's left:</b> √(${f(d)} − ${f(Ch.l21)}²) = ${Ch.ok?`<span class="hl">${f(Ch.l22)}</span>`:'<span class="pop">not possible</span>'}</div></div>`;
+  html+='</div>';
+  html+=Ch.ok?`<div class="eq"><span class="m">L</span> = <span class="box">${mat([[Ch.l11,0],[Ch.l21,Ch.l22]])}</span> &nbsp; check: <span class="m">LL</span>ᵀ = ${mat(mul([[Ch.l11,0],[Ch.l21,Ch.l22]],[[Ch.l11,Ch.l21],[0,Ch.l22]]))} <span class="check">✓</span></div><span class="chip good">Works because both stretches (${f(E.l1,2)}, ${f(E.l2,2)}) are positive: a bowl</span>`
+   :`<span class="chip bad">No square root: ${Ch.why}</span>`;
+  $('#cholOut').innerHTML=html; drawChol(Ch); }
+function drawChol(Ch){ const cv=$('#cvChol'); const {ctx,w,h}=setupCanvas(cv); const r=rng(cholSeed), n=500; const Z=[]; for(let i=0;i<n;i++) Z.push([gauss(r),gauss(r)]);
+  const Y=Ch.ok?Z.map(z=>[Ch.l11*z[0],Ch.l21*z[0]+Ch.l22*z[1]]):Z; let m=3.6; for(const p of Y) m=Math.max(m,Math.abs(p[0])*1.05,Math.abs(p[1])*1.05); m=Math.min(m,12);
+  const V=view(w,h,-m,m,-m,m); grid(ctx,V,w,h,m>6?2:1); const t=Ch.ok?blendT:0;
+  const cA=hexRgb(C('--muted')), cB=hexRgb(C('--p1')); const col=`rgb(${cA.map((c,i)=>Math.round(c+(cB[i]-c)*t)).join(',')})`;
+  ctx.save(); ctx.fillStyle=col; ctx.globalAlpha=.65; for(let i=0;i<n;i++){ const x=Z[i][0]+(Y[i][0]-Z[i][0])*t, y=Z[i][1]+(Y[i][1]-Z[i][1])*t; ctx.beginPath(); ctx.arc(V.X(x),V.Y(y),2.4,0,7); ctx.fill(); } ctx.restore();
+  if(Ch.ok&&t>.99){ const mx=Y.reduce((s,p)=>s+p[0],0)/n, my=Y.reduce((s,p)=>s+p[1],0)/n; let sxx=0,sxy=0,syy=0; for(const p of Y){ sxx+=(p[0]-mx)**2; sxy+=(p[0]-mx)*(p[1]-my); syy+=(p[1]-my)**2; }
+    $('#cholStat').innerHTML=`Correlation of the blended numbers ≈ <b>${f(sxy/Math.sqrt(sxx*syy),2)}</b>: they now move together.`; }
+  else $('#cholStat').textContent=Ch.ok?'Independent numbers: no pattern. Hit Blend.':'No L for this matrix, so no smoothie.'; }
+function animBlend(target){ cancelAnimationFrame(blendAnim); if(reduce){ blendT=target; cholRender(); return; } const s=blendT, t0=performance.now();
+  const step=now=>{ const k=Math.min(1,(now-t0)/1100); blendT=s+(target-s)*k; drawChol(chol(P1.a,P1.b,P1.d)); if(k<1) blendAnim=requestAnimationFrame(step); }; blendAnim=requestAnimationFrame(step); }
+$('#blend').onclick=()=>animBlend(1); $('#unblend').onclick=()=>animBlend(0); $('#cholRedraw').onclick=()=>{ cholSeed=(cholSeed*7+13)%100000; blendT=0; cholRender(); };
+renderers['The smoothie trick']=cholRender;
+
+/* undo */
+const house=[[-.8,-.8],[.8,-.8],[.8,.4],[0,1.1],[-.8,.4],[-.8,-.8]], door=[[-.2,-.8],[-.2,-.1],[.2,-.1],[.2,-.8]];
+let undoState={from:'I',to:'I',t:1}, undoAnim=null;
+function undoMatrix(k){ const A=Amat(); return k==='A'?A:[[1,0],[0,1]]; }
+function invRender(){ const {a,b,d}=P1, det=a*d-b*b, A=Amat();
+  if(Math.abs(det)<1e-12){ $('#invOut').innerHTML=`<div class="eq">determinant = ${f(a)}·${f(d)} − ${f(b)}² = <span class="box">0</span></div><span class="chip bad">Pancake! The machine squashes everything flat, and you can't un-squash a pancake. No undo button.</span>`; $('#runU').disabled=true; }
+  else { const I=[[d/det,-b/det],[-b/det,a/det]]; $('#runU').disabled=false;
+    $('#invOut').innerHTML=`<div class="steps"><div class="step"><b class="n">1</b><div><b>Swap</b> the diagonal: ${f(a)} ↔ ${f(d)}</div></div><div class="step"><b class="n">2</b><div><b>Flip the signs</b> of the other two: ${f(b)} → ${f(-b)}</div></div><div class="step"><b class="n">3</b><div><b>Divide</b> by the determinant, ${f(det)}</div></div></div>
+     <div class="eq">undo button = <span class="box">${mat(I)}</span></div><div class="eq">machine × undo = ${mat(mul(A,I))} = do nothing <span class="check">✓</span></div>`; }
+  drawUndo(); }
+function drawUndo(){ const cv=$('#cvUndo'); const {ctx,w,h}=setupCanvas(cv); const M0=undoMatrix(undoState.from), M1=undoMatrix(undoState.to), t=undoState.t; const M=[[0,0],[0,0]]; for(let i=0;i<2;i++)for(let j=0;j<2;j++) M[i][j]=M0[i][j]+(M1[i][j]-M0[i][j])*t;
+  const V=view(w,h,-3.6,3.6,-3.6,3.6); grid(ctx,V,w,h); const T=p=>[M[0][0]*p[0]+M[0][1]*p[1],M[1][0]*p[0]+M[1][1]*p[1]];
+  ctx.save(); ctx.strokeStyle=C('--line'); ctx.setLineDash([4,4]); ctx.lineWidth=1.5; ctx.beginPath(); house.forEach((p,i)=>i?ctx.lineTo(V.X(p[0]),V.Y(p[1])):ctx.moveTo(V.X(p[0]),V.Y(p[1]))); ctx.stroke(); ctx.restore();
+  ctx.save(); ctx.fillStyle=C('--p2'); ctx.strokeStyle=C('--ink'); ctx.lineWidth=3; ctx.beginPath(); house.map(T).forEach((p,i)=>i?ctx.lineTo(V.X(p[0]),V.Y(p[1])):ctx.moveTo(V.X(p[0]),V.Y(p[1]))); ctx.globalAlpha=.5; ctx.fill(); ctx.globalAlpha=1; ctx.stroke();
+  ctx.fillStyle=C('--p1'); ctx.beginPath(); door.map(T).forEach((p,i)=>i?ctx.lineTo(V.X(p[0]),V.Y(p[1])):ctx.moveTo(V.X(p[0]),V.Y(p[1]))); ctx.closePath(); ctx.fill(); ctx.restore();
+  $('#undoMsg').textContent=undoState.to==='A'?(t<1?'Running the machine…':'The machine bent the house.'):(undoState.from==='A'&&t>=1?'Undo! Back to the original house.':'The original house.'); }
+function animUndo(to){ cancelAnimationFrame(undoAnim); const from=undoState.t>=1?undoState.to:undoState.from; undoState={from,to,t:0}; if(reduce){ undoState.t=1; drawUndo(); return; } const t0=performance.now();
+  const step=now=>{ undoState.t=Math.min(1,(now-t0)/1000); drawUndo(); if(undoState.t<1) undoAnim=requestAnimationFrame(step); else if(to==='I'&&from==='A') toast('Undone!'); }; undoAnim=requestAnimationFrame(step); }
+$('#runM').onclick=()=>animUndo('A'); $('#runU').onclick=()=>animUndo('I'); $('#runR').onclick=()=>{ cancelAnimationFrame(undoAnim); undoState={from:'I',to:'I',t:1}; drawUndo(); };
+renderers['The undo button']=invRender;
+
+function sumRender(){ const {a,b,d}=P1, E=eigSym(a,b,d), Ch=chol(a,b,d), det=a*d-b*b, A=Amat();
+  const rows=[['The machine',mat(A)],['Grocery bill A·(2,1)',vec(a*2+b,b*2+d)],['Trace, determinant',`${f(E.tr)}, ${f(det)}`],['Stretch amounts',`×${f(E.l1)} and ×${f(E.l2)}`],
+   ['Special directions',`(${f(E.h1[0])}, ${f(E.h1[1])}) and (${f(E.h2[0])}, ${f(E.h2[1])})`],['Turn, stretch, turn back',`H = ${mat([[E.h1[0],E.h2[0]],[E.h1[1],E.h2[1]]])} Λ = ${mat([[E.l1,0],[0,E.l2]])}`],
+   ['Square root (Cholesky)',Ch.ok?mat([[Ch.l11,0],[Ch.l21,Ch.l22]]):'<span class="chip bad">doesn\'t exist</span>'],['Undo button (inverse)',Math.abs(det)<1e-12?'<span class="chip bad">pancake: none</span>':mat([[d/det,-b/det],[-b/det,a/det]])]];
+  $('#sumTable').innerHTML='<tr><th>Thing</th><th>Answer</th></tr>'+rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join(''); }
+renderers['Person 1 cheat sheet']=sumRender;
+
+/* ================= P2: lemonade ================= */
+const FIRM0={a1:60,a2:55,b11:2,b22:2,b12:.5,b21:.5,c1:10,c2:15,g:1}; const F={...FIRM0};
+const fdefs=[['a1','Lemonade top price',20,120,1],['a2','Iced tea top price',20,120,1],['b11','Lemonade price drop',.5,5,.1],['b22','Iced tea price drop',.5,5,.1],['b12','Tea steals lemonade',-1.5,2,.1],['b21','Lemonade steals tea',-1.5,2,.1],['c1','Lemonade cost/cup',0,60,1],['c2','Iced tea cost/cup',0,60,1],['g','Pitcher sharing',-2,6,.1]];
+const sliderHTML=(pre,keys)=>fdefs.filter(d=>keys.includes(d[0])).map(([k,lab,mn,mx,st])=>`<div class="sl"><label for="${pre}${k}">${lab}</label><input type="range" id="${pre}${k}" data-k="${k}" min="${mn}" max="${mx}" step="${st}" value="${F[k]}"><output id="${pre}${k}o">${f(F[k],2)}</output></div>`).join('');
+$('#firmSliders').innerHTML=sliderHTML('fs_',fdefs.map(d=>d[0]));
+$('#firmSlidersMini').innerHTML='<div class="small" style="margin-top:8px">Mess with the stand:</div>'+sliderHTML('fm_',['g','b12','c1']);
+function firmSync(){ $$('#firmSliders input,#firmSlidersMini input').forEach(i=>{ i.value=F[i.dataset.k]; document.getElementById(i.id+'o').textContent=f(F[i.dataset.k],2); }); }
+$$('#firmSliders input,#firmSlidersMini input').forEach(i=>i.addEventListener('input',()=>{ F[i.dataset.k]=+i.value; firmSync(); guess.won=false; renderCurrent(); }));
+$('#firmReset').onclick=()=>{ Object.assign(F,FIRM0); firmSync(); renderCurrent(); };
+function term(c,v,first){ if(Math.abs(c)<1e-12) return ''; const a=Math.abs(c); const sign=c<0?(first?'−':' − '):(first?'':' + '); return `${sign}${Math.abs(a-1)<1e-12&&v?'':f(a,2)}${v}`; }
+const q1v='<span class="m">q</span>₁', q2v='<span class="m">q</span>₂';
+function firmCalc(){ const b1=F.a1-F.c1, b2=F.a2-F.c2, k=F.b12+F.b21+F.g; const det=F.b11*F.b22-k*k/4; const nd=F.b11>0&&det>1e-12; const D=4*F.b11*F.b22-k*k;
+  const q1=(2*F.b22*b1-k*b2)/D, q2=(2*F.b11*b2-k*b1)/D; return {b1,b2,k,det,nd,q1,q2,p1:F.a1-F.b11*q1-F.b12*q2,p2:F.a2-F.b21*q1-F.b22*q2,pi:.5*(b1*q1+b2*q2)}; }
+const profit=(q1,q2,R)=>R.b1*q1+R.b2*q2-F.b11*q1*q1-F.b22*q2*q2-R.k*q1*q2;
+function firmFormulas(){ const R=firmCalc();
+  $('#firmFormulas').innerHTML=`<div class="eq">lemonade price = ${f(F.a1,2)}${term(-F.b11,q1v)}${term(-F.b12,q2v)}</div><div class="eq">iced tea price = ${f(F.a2,2)}${term(-F.b21,q1v)}${term(-F.b22,q2v)}</div>
+   <div class="eq">cost = ${term(F.c1,q1v,true)}${term(F.c2,q2v)}${term(F.g,q1v+q2v)}</div>
+   <div class="eq big">profit = <span class="box">${term(R.b1,q1v,true)}${term(R.b2,q2v)}${term(-F.b11,q1v+'²')}${term(-F.b22,q2v+'²')}${term(-R.k,q1v+q2v)}</span></div>
+   <div class="plain"><b>The professor's hint: it's a quadratic form</b>Squares and a times-each-other term, packed into a little grid: ${mat([[-F.b11,-R.k/2],[-R.k/2,-F.b22]])} (split ${f(-R.k,2)} in half so it's a mirror image).</div>`; }
+renderers['The lemonade stand']=firmFormulas;
+const guess={q1:4,q2:14,won:false,show:false};
+function firmGeom(R){ let Q1=Math.max(12,(R.nd&&R.q1>0?R.q1*2:0),F.a1/F.b11*.6), Q2=Math.max(12,(R.nd&&R.q2>0?R.q2*2:0),F.a2/F.b22*.6); return [Math.min(Q1,200),Math.min(Q2,200)]; }
+function firmGame(){ const R=firmCalc(), [Q1,Q2]=firmGeom(R); const cv=$('#cvFirm'); const {ctx,w,h}=setupCanvas(cv); const pad={l:38,b:28,t:8,r:8}, W=w-pad.l-pad.r, Hh=h-pad.t-pad.b;
+  const N=110; const G=new Float64Array((N+1)*(N+1)); let mn=Infinity,mx=-Infinity;
+  for(let j=0;j<=N;j++) for(let i=0;i<=N;i++){ const v=profit(i/N*Q1,j/N*Q2,R); G[j*(N+1)+i]=v; mn=Math.min(mn,v); mx=Math.max(mx,v); }
+  const top=R.nd&&R.q1>=0&&R.q2>=0?R.pi:mx;
+  ctx.save(); ctx.translate(pad.l,pad.t); heat(ctx,W,Hh,(x,y)=>{ const v=profit(x*Q1,(1-y)*Q2,R); return v<=0?-.25:Math.pow(Math.max(0,v/top),2.5); },C('--p2'),C('--pop'),1); ctx.restore();
+  const toPx=p=>[pad.l+p[0]/N*W,pad.t+Hh-p[1]/N*Hh]; const lo=Math.max(mn,0);
+  for(let s=1;s<=7;s++) drawSegs(ctx,contour(G,N,top-(top-lo)*Math.pow(s/7,2)),toPx,C('--ink'),1);
+  ctx.save(); ctx.strokeStyle=C('--line'); ctx.lineWidth=2; ctx.strokeRect(pad.l,pad.t,W,Hh); ctx.fillStyle=C('--muted'); ctx.font='12px '+tok('--mono');
+  for(let t=0;t<=4;t++){ ctx.fillText(f(t/4*Q1,0),pad.l+t/4*W-6,h-10); ctx.fillText(f(t/4*Q2,0),4,pad.t+Hh-t/4*Hh+4); } ctx.font='700 12px '+tok('--body'); ctx.fillText('lemonade cups →',w-120,h-10); ctx.save(); ctx.translate(12,pad.t+70); ctx.rotate(-Math.PI/2); ctx.fillText('iced tea cups →',-60,0); ctx.restore(); ctx.restore();
+  cv._geo={pad,W,Hh,Q1,Q2};
+  const gp=[pad.l+guess.q1/Q1*W,pad.t+Hh-guess.q2/Q2*Hh]; ctx.save(); ctx.fillStyle=C('--pop'); ctx.strokeStyle=C('--paper'); ctx.lineWidth=3; ctx.beginPath(); ctx.arc(gp[0],gp[1],9,0,7); ctx.fill(); ctx.stroke(); ctx.restore();
+  if((guess.show||guess.won)&&R.nd&&R.q1>=0&&R.q2>=0){ const tp=[pad.l+R.q1/Q1*W,pad.t+Hh-R.q2/Q2*Hh]; ctx.save(); ctx.strokeStyle=C('--p3'); ctx.lineWidth=4; ctx.beginPath(); ctx.arc(tp[0],tp[1],13,0,7); ctx.stroke(); ctx.restore(); }
+  const gpv=profit(guess.q1,guess.q2,R); const pct=top>0?Math.max(0,gpv/top):0; $('#guessMeter').style.width=Math.min(100,pct*100)+'%';
+  $('#guessOut').innerHTML=`<div class="eq">Your plan: <b>${f(guess.q1,1)}</b> lemonades, <b>${f(guess.q2,1)}</b> iced teas → profit <span class="box">${f(gpv,0)}¢</span></div><div class="small">${R.nd&&top>0?`That's ${f(pct*100,1)}% of the best possible profit.`:'This stand has no top in the middle right now.'}</div>`;
+  if(R.nd&&pct>.995&&!guess.won){ guess.won=true; confetti(160); toast('You found the top of the hill!'); }
+  let html=''; if(guess.show||guess.won){ if(R.nd){ html=`<div class="plain"><b>The math answer</b>Set both slopes to zero: ${f(R.b1,2)} − ${f(2*F.b11,2)}q₁ − ${f(R.k,2)}q₂ = 0 and ${f(R.b2,2)} − ${f(R.k,2)}q₁ − ${f(2*F.b22,2)}q₂ = 0.<br>Top of the hill: <b>${f(R.q1,2)}</b> lemonades at ${f(R.p1,2)}¢ and <b>${f(R.q2,2)}</b> iced teas at ${f(R.p2,2)}¢ → <b>${f(R.pi,1)}¢ = $${f(R.pi/100,2)}</b>.</div><span class="chip good">Hill test: top-left ${f(-F.b11,2)} &lt; 0 and determinant ${f(R.det,2)} &gt; 0</span>`; if(R.q1<0||R.q2<0) html+=' <span class="chip warn">The top needs negative cups, so sell only one drink.</span>'; }
+    else html='<span class="chip bad">It became a Pringle (saddle): no top in the middle. Sell only one drink!</span>'; }
+  $('#firmSolve').innerHTML=html; }
+(function(){ const cv=$('#cvFirm'); let drag=false; const set=e=>{ const g=cv._geo; if(!g) return; const r=cv.getBoundingClientRect(); const x=(e.clientX-r.left-g.pad.l)/g.W, y=1-(e.clientY-r.top-g.pad.t)/g.Hh;
+  guess.q1=Math.max(0,Math.min(1,x))*g.Q1; guess.q2=Math.max(0,Math.min(1,y))*g.Q2; firmGame(); };
+  cv.addEventListener('pointerdown',e=>{ drag=true; cv.setPointerCapture(e.pointerId); set(e); }); cv.addEventListener('pointermove',e=>{ if(drag) set(e); }); cv.addEventListener('pointerup',()=>drag=false); cv.addEventListener('pointercancel',()=>drag=false); })();
+$('#showTop').onclick=()=>{ guess.show=!guess.show; $('#showTop').textContent=guess.show?'Hide the math answer':'Show the math answer'; firmGame(); };
+renderers['Find the top of the hill']=firmGame;
+
+/* ================= P3: shapes ================= */
+const Q={a11:1,a12:1,a22:2};
+const qdefs=[['a11','top-left',-3,3,.1],['a12','off-diagonal (tilt)',-3,3,.1],['a22','bottom-right',-3,3,.1]];
+$('#qfSliders').innerHTML=qdefs.map(([k,lab,mn,mx,st])=>`<div class="sl"><label for="q_${k}">${lab}</label><input type="range" id="q_${k}" data-k="${k}" min="${mn}" max="${mx}" step="${st}" value="${Q[k]}"><output id="q_${k}o">${f(Q[k],2)}</output></div>`).join('');
+const qpre=[['Round bowl',1,0,1],['Squished bowl',1,0,4],['Tilted (our A)',1,1,2],['Half-pipe',1,1,1],['Pringle',1,2,1],['Hill',-1,-1,-2]];
+$('#qfPresets').innerHTML=qpre.map((p,i)=>`<button class="btn" data-qp="${i}">${p[0]}</button>`).join('');
+function qSync(){ qdefs.forEach(([k])=>{ $('#q_'+k).value=Q[k]; $('#q_'+k+'o').textContent=f(Q[k],2); }); }
+$$('#qfSliders input').forEach(i=>i.addEventListener('input',()=>{ Q[i.dataset.k]=+i.value; qSync(); qfRender(); }));
+$$('[data-qp]').forEach(b=>b.onclick=()=>{ const p=qpre[+b.dataset.qp]; Q.a11=p[1];Q.a12=p[2];Q.a22=p[3]; qSync(); qfRender(); });
+function classify(a,b,d){ const E=eigSym(a,b,d), eps=1e-9; let k;
+  if(E.l2>eps) k='bowl'; else if(E.l1<-eps) k='hill'; else if(E.l1>eps&&E.l2<-eps) k='pringle'; else k='halfpipe';
+  const info={bowl:['Bowl','positive definite','good'],hill:['Hill','negative definite','good'],pringle:['Pringle (saddle)','indefinite','bad'],halfpipe:['Half-pipe (trough)','semidefinite','warn']}[k];
+  return {E,k,name:info[0],fancy:info[1],cls:info[2]}; }
+function shapeField(cv,a,b,d,R=3,withHeat=true){ const {ctx,w,h}=setupCanvas(cv); const V=view(w,h,-R,R,-R,R);
+  if(withHeat){ const x0=V.ix(0),x1=V.ix(w),y1=V.iy(0),y0=V.iy(h); heat(ctx,w,h,(u,v)=>{ const x=x0+(x1-x0)*u, y=y1+(y0-y1)*v; return a*x*x+2*b*x*y+d*y*y; },C('--p3'),C('--pop'),6); }
+  grid(ctx,V,w,h); const N=150; const G=new Float64Array((N+1)*(N+1)); const x0=V.ix(0),x1=V.ix(w),y1=V.iy(0),y0=V.iy(h);
+  for(let j=0;j<=N;j++) for(let i=0;i<=N;i++){ const x=x0+(x1-x0)*i/N, y=y1+(y0-y1)*j/N; G[j*(N+1)+i]=a*x*x+2*b*x*y+d*y*y; }
+  const toPx=p=>[p[0]/N*w,p[1]/N*h]; for(const L of [-4,-2,2,4]) drawSegs(ctx,contour(G,N,L),toPx,C('--line'),1.2);
+  drawSegs(ctx,contour(G,N,-1),toPx,C('--pop'),2.2,[6,4]); drawSegs(ctx,contour(G,N,1),toPx,C('--ink'),3.2); return {ctx,V}; }
+function qfRender(){ const {a11:a,a12:b,a22:d}=Q; const K=classify(a,b,d), E=K.E, det=a*d-b*b;
+  $('#qfFormula').innerHTML=`<div class="eq big"><span class="m">q</span> = ${term(a,'<span class="m">x</span>₁²',true)||'0'}${term(2*b,'<span class="m">x</span>₁<span class="m">x</span>₂')}${term(d,'<span class="m">x</span>₂²')} &nbsp; ↔ &nbsp; ${mat([[a,b],[b,d]])}</div>`;
+  $('#qfClass').innerHTML=`<span class="chip ${K.cls}">${K.name}</span> <span class="small">(fancy name: ${K.fancy})</span>
+   <div class="small" style="margin-top:6px">Quick test: top-left = ${f(a,2)}, determinant = ${f(a,2)}·${f(d,2)} − ${f(b,2)}² = <b>${f(det,3)}</b> · steepness in the special directions: ${f(E.l1,2)} and ${f(E.l2,2)}</div>`;
+  const {ctx,V}=shapeField($('#cvQF'),a,b,d); arrow(ctx,V,0,0,2.4*E.h1[0],2.4*E.h1[1],C('--ink'),2); arrow(ctx,V,0,0,2.4*E.h2[0],2.4*E.h2[1],C('--ink'),2); }
+renderers['Bowls, hills and Pringles']=qfRender;
+
+let famT=.5, famAnim=null;
+const famName=t=>Math.abs(t)<1e-9?'a circle (round bowl)':Math.abs(t)<1-1e-9?'a tilted oval (bowl)':Math.abs(Math.abs(t)-1)<1e-9?'two straight lines (half-pipe)':'X-curves (Pringle)';
+function famRender(){ const t=famT; $('#famMat').innerHTML=mat([[1,t],[t,1]]); $('#famTo').textContent=f(t,2); const K=classify(1,t,1);
+  $('#famOut').innerHTML=`<div class="eq">determinant = 1 − t² = <b>${f(1-t*t,3)}</b></div><span class="chip ${K.cls}">${K.name}</span> <span class="small">→ the contour line is ${famName(t)}</span>`;
+  shapeField($('#cvFam'),1,t,1,2.5); }
+$('#famT').addEventListener('input',e=>{ famT=+e.target.value; famRender(); });
+$$('[data-t]').forEach(b=>b.onclick=()=>{ famT=+b.dataset.t; $('#famT').value=famT; famRender(); });
+$('#famPlay').onclick=()=>{ cancelAnimationFrame(famAnim); if(reduce){ famT=2; $('#famT').value=2; famRender(); return; } const t0=performance.now();
+  const step=now=>{ const k=Math.min(1,(now-t0)/4000); famT=Math.round((0+2.2*k)*100)/100; $('#famT').value=famT; famRender(); if(k<1) famAnim=requestAnimationFrame(step); }; famAnim=requestAnimationFrame(step); };
+renderers['Turn the knob']=famRender;
+
+/* quiz */
+const QZ={m:null,answered:false,score:0,streak:0,best:0,n:0}; try{ QZ.best=+(localStorage.getItem('mml-best')||0); }catch(e){}
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+function makeQuiz(){ const kinds=['bowl','hill','pringle','halfpipe']; const want=kinds[ri(0,3)]; let a,b,d,tries=0;
+  do{ tries++; if(want==='halfpipe'){ const p=ri(1,2), q=ri(1,2), s=Math.random()<.5?1:-1, neg=Math.random()<.3?-1:1; a=neg*p*p; d=neg*q*q; b=neg*s*p*q; if(Math.random()<.3){ b=0; d=0; } }
+    else { a=ri(-3,3); b=ri(-3,3); d=ri(-3,3); } } while((classify(a,b,d).k!==want||(a===0&&b===0&&d===0))&&tries<500);
+  QZ.m=[a,b,d]; QZ.answered=false; quizRender(); }
+function quizRender(){ if(!QZ.m) makeQuiz(); const [a,b,d]=QZ.m; const K=classify(a,b,d);
+  $('#quizQ').innerHTML=`<span class="m">A</span> = ${mat([[a,b],[b,d]])} &nbsp; <span class="small">q = ${term(a,'x₁²',true)||'0'}${term(2*b,'x₁x₂')}${term(d,'x₂²')}</span>`;
+  const opts=[['bowl','Bowl'],['hill','Hill'],['pringle','Pringle'],['halfpipe','Half-pipe']];
+  $('#quizA').innerHTML=opts.map(o=>`<button class="ans" data-k="${o[0]}">${o[1]}</button>`).join('');
+  $$('#quizA .ans').forEach(btn=>btn.onclick=()=>{ if(QZ.answered) return; QZ.answered=true; QZ.n++; const ok=btn.dataset.k===K.k;
+    btn.classList.add(ok?'right':'wrong'); if(!ok) $(`#quizA .ans[data-k="${K.k}"]`).classList.add('right');
+    if(ok){ QZ.score++; QZ.streak++; if(QZ.streak>QZ.best){ QZ.best=QZ.streak; try{localStorage.setItem('mml-best',QZ.best);}catch(e){} } confetti(QZ.streak%5===0?220:80); if(QZ.streak%5===0) toast(QZ.streak+' in a row!'); } else QZ.streak=0;
+    const det=a*d-b*b; $('#quizFb').innerHTML=`<div class="plain"><b>${ok?'Correct!':'Not quite.'} It's a ${K.name.toLowerCase()}.</b>Top-left = ${f(a)}, determinant = ${f(a)}·${f(d)} − ${f(b)}² = <b>${f(det)}</b>. ${det<0?'Negative determinant means Pringle.':det===0?'Zero determinant means half-pipe.':a>0?'Positive top-left and positive determinant means bowl.':'Negative top-left and positive determinant means hill.'}</div>`;
+    scoreRender(); drawQuiz(true); });
+  $('#quizFb').innerHTML=''; scoreRender(); drawQuiz(false); }
+function scoreRender(){ $('#qScore').textContent=`Score ${QZ.score}/${QZ.n}`; $('#qStreak').textContent=`Streak ${QZ.streak}`; $('#qBest').textContent=`Best ${QZ.best}`; }
+function drawQuiz(show){ const cv=$('#cvQuiz'); if(!show){ const {ctx,w,h}=setupCanvas(cv); ctx.fillStyle=C('--muted'); ctx.font='800 22px '+tok('--display'); ctx.textAlign='center'; ctx.fillText('Make your guess…',w/2,h/2); return; } const [a,b,d]=QZ.m; shapeField(cv,a,b,d,3); }
+$('#quizNext').onclick=makeQuiz;
+renderers['Shape quiz']=quizRender;
+
+let rho=.5;
+function bvnRender(){ $('#rhoO').textContent=f(rho,2); const det=1-rho*rho, Si=[[1/det,-rho/det],[-rho/det,1/det]];
+  const cv=$('#cvBvn'); const {ctx,w,h}=setupCanvas(cv); const R=3.2; const V=view(w,h,-R,R,-R,R);
+  const x0=V.ix(0),x1=V.ix(w),y1=V.iy(0),y0=V.iy(h); heat(ctx,w,h,(u,v)=>{ const x=x0+(x1-x0)*u, y=y1+(y0-y1)*v; return Math.exp(-.5*(Si[0][0]*x*x+2*Si[0][1]*x*y+Si[1][1]*y*y)); },C('--p3'),C('--pop'),1);
+  grid(ctx,V,w,h); const r=rng(42), Ch=chol(1,rho,1); ctx.save(); ctx.fillStyle=C('--ink'); ctx.globalAlpha=.35;
+  for(let i=0;i<350;i++){ const z1=gauss(r), z2=gauss(r); ctx.beginPath(); ctx.arc(V.X(Ch.l11*z1),V.Y(Ch.l21*z1+Ch.l22*z2),2,0,7); ctx.fill(); } ctx.restore();
+  const N=130, G=new Float64Array((N+1)*(N+1)); for(let j=0;j<=N;j++) for(let i=0;i<=N;i++){ const x=x0+(x1-x0)*i/N, y=y1+(y0-y1)*j/N; G[j*(N+1)+i]=Si[0][0]*x*x+2*Si[0][1]*x*y+Si[1][1]*y*y; }
+  for(const L of [.5,1.5,3,5]) drawSegs(ctx,contour(G,N,L),p=>[p[0]/N*w,p[1]/N*h],C('--p3'),2.4);
+  ctx.save(); ctx.strokeStyle=C('--muted'); ctx.setLineDash([5,5]); ctx.beginPath(); ctx.moveTo(V.X(-R),V.Y(-R)); ctx.lineTo(V.X(R),V.Y(R)); ctx.stroke(); ctx.restore();
+  ctx.save(); ctx.strokeStyle=C('--p2'); ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(V.X(-R),V.Y(-R*rho)); ctx.lineTo(V.X(R),V.Y(R*rho)); ctx.stroke(); ctx.restore();
+  ctx.save(); ctx.fillStyle=C('--muted'); ctx.font='700 12px '+tok('--body'); ctx.fillText("dad's height →",w-110,h-8); ctx.fillText("son's height ↑",8,16); ctx.restore(); }
+$('#rho').addEventListener('input',e=>{ rho=+e.target.value; bvnRender(); });
+renderers['Why anyone cares']=bvnRender;
+
+/* ================= start ================= */
+const hash=(location.hash||'').slice(1); const startIx=hash?slides.findIndex(s=>s.id===hash):0;
+go(startIx>=0?startIx:0);
+})();
+</script>
+
+</body>
+</html>
